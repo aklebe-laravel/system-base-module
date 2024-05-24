@@ -102,7 +102,7 @@ class AddonObjectService extends BaseService
         }
 
         return [
-            'vendor_snake_name'                => $v,
+            'vendor_name'                      => $v,
             $this->addonType.'_snake_name'     => $n,
             $this->addonType.'_snake_name_git' => $ng,
         ];

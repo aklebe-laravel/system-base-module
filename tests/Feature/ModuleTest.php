@@ -18,7 +18,7 @@ class ModuleTest extends TestCase
                 'result' => [
                     'studly_name'           => 'TestWithChaoticCaseEx',
                     'snake_name'            => 'test-with-chaotic-case-ex',
-                    'vendor_snake_name'     => env('MODULE_DEPLOYENV_REQUIRE_MODULES_DEFAULT_VENDOR'),
+                    'vendor_name'           => env('MODULE_DEPLOYENV_REQUIRE_MODULES_DEFAULT_VENDOR'),
                     'module_snake_name'     => 'test-with-chaotic-case-ex',
                     'module_snake_name_git' => 'test-with-chaotic-case-ex-module',
 
@@ -29,7 +29,7 @@ class ModuleTest extends TestCase
                 'result' => [
                     'studly_name'           => 'XyzAbcA123',
                     'snake_name'            => 'xyz-abc-a123',
-                    'vendor_snake_name'     => env('MODULE_DEPLOYENV_REQUIRE_MODULES_DEFAULT_VENDOR'),
+                    'vendor_name'           => env('MODULE_DEPLOYENV_REQUIRE_MODULES_DEFAULT_VENDOR'),
                     'module_snake_name'     => 'xyz-abc-a123',
                     'module_snake_name_git' => 'xyz-abc-a123-module',
 
@@ -40,7 +40,7 @@ class ModuleTest extends TestCase
                 'result' => [
                     'studly_name'           => 'XyzAbcA123',
                     'snake_name'            => 'xyz-abc-a123',
-                    'vendor_snake_name'     => env('MODULE_DEPLOYENV_REQUIRE_MODULES_DEFAULT_VENDOR'),
+                    'vendor_name'           => env('MODULE_DEPLOYENV_REQUIRE_MODULES_DEFAULT_VENDOR'),
                     'module_snake_name'     => 'xyz-abc-a123',
                     'module_snake_name_git' => 'xyz-abc-a123-module',
 
@@ -51,7 +51,7 @@ class ModuleTest extends TestCase
                 'result' => [
                     'studly_name'           => 'SystemBase',
                     'snake_name'            => 'system-base',
-                    'vendor_snake_name'     => env('MODULE_DEPLOYENV_REQUIRE_MODULES_DEFAULT_VENDOR'),
+                    'vendor_name'           => env('MODULE_DEPLOYENV_REQUIRE_MODULES_DEFAULT_VENDOR'),
                     'module_snake_name'     => 'system-base',
                     'module_snake_name_git' => 'system-base-module',
 
@@ -62,7 +62,7 @@ class ModuleTest extends TestCase
                 'result' => [
                     'studly_name'           => 'SystemBase',
                     'snake_name'            => 'system-base',
-                    'vendor_snake_name'     => 'aklebe-laravel',
+                    'vendor_name'           => 'AKlebeLaravel',
                     'module_snake_name'     => 'system-base',
                     'module_snake_name_git' => 'system-base-module',
 
@@ -73,7 +73,7 @@ class ModuleTest extends TestCase
                 'result' => [
                     'studly_name'           => 'WebsiteBase',
                     'snake_name'            => 'website-base',
-                    'vendor_snake_name'     => 'aklebe-laravel',
+                    'vendor_name'           => 'AKlebeLaravel',
                     'module_snake_name'     => 'website-base',
                     'module_snake_name_git' => 'website-base-module',
 
