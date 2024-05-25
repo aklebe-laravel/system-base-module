@@ -62,7 +62,7 @@ class ModuleTest extends TestCase
                 'result' => [
                     'studly_name'           => 'SystemBase',
                     'snake_name'            => 'system-base',
-                    'vendor_name'           => 'AKlebeLaravel',
+                    'vendor_name'           => 'aklebe-laravel',
                     'module_snake_name'     => 'system-base',
                     'module_snake_name_git' => 'system-base-module',
 
@@ -73,7 +73,7 @@ class ModuleTest extends TestCase
                 'result' => [
                     'studly_name'           => 'WebsiteBase',
                     'snake_name'            => 'website-base',
-                    'vendor_name'           => 'AKlebeLaravel',
+                    'vendor_name'           => 'aklebe-laravel',
                     'module_snake_name'     => 'website-base',
                     'module_snake_name_git' => 'website-base-module',
 
