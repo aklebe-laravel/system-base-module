@@ -89,7 +89,6 @@ class AddonObjectService extends BaseService
 
         if ($validate) {
             // force snake and lower case first
-            $v = Str::snake(lcfirst($v), '-');
             $n = Str::snake(lcfirst($n), '-');
         }
 
