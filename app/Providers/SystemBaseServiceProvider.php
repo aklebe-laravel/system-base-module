@@ -2,9 +2,9 @@
 
 namespace Modules\SystemBase\app\Providers;
 
-use App\Http\Kernel;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Modules\SystemBase\app\Console\Password;
 use Modules\SystemBase\app\Providers\Base\ModuleBaseServiceProvider;
 use Modules\SystemBase\app\Services\FileService;
 use Modules\SystemBase\app\Services\ModuleService;
@@ -31,6 +31,10 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
     public function boot(): void
     {
         parent::boot();
+
+        $this->commands([
+            Password::class
+        ]);
 
         // Make themes working
         Route::pushMiddlewareToGroup('web', \Shipu\Themevel\Middleware\WebMiddleware::class);

@@ -30,8 +30,7 @@ class Password extends Command
      */
     public function handle()
     {
-        $pass = $this->secret("Type the password you want to hash:");
-        $password = Hash::make($pass);
+        $password = $this->secret("Type the password you want to hash:");
 
         if ($id = $this->option('user')) {
             if ($user = app(User::class)->where('id', $id)->first()) {
