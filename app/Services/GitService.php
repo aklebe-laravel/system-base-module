@@ -6,7 +6,7 @@ use Composer\Semver\Semver;
 use CzProject\GitPhp\Git;
 use CzProject\GitPhp\GitException;
 use CzProject\GitPhp\GitRepository;
-use Illuminate\Support\Facades\Log;
+use Exception;
 use Illuminate\Support\Str;
 use Modules\SystemBase\app\Services\Base\BaseService;
 
@@ -64,8 +64,8 @@ class GitService extends BaseService
 
         try {
             $this->gitRepository = $git->cloneRepository($srcUrl, $destPath);
-        } catch (\Exception $ex) {
-            Log::error($ex->getMessage(), [__METHOD__]);
+        } catch (Exception $ex) {
+            $this->error($ex->getMessage(), [__METHOD__]);
             return false;
         }
 
@@ -136,6 +136,7 @@ class GitService extends BaseService
         try {
             // remember prev commit
             $id = $this->getCommitId();
+            $this->debug(sprintf("Commit ID: %s", $id));
             // pull
             $this->gitRepository->pull();
             // compare new commit
@@ -143,8 +144,85 @@ class GitService extends BaseService
                 $this->repositoryJustUpdated = true;
             }
             return true;
-        } catch (\Exception $ex) {
-            Log::error($ex->getMessage(), [__METHOD__]);
+        } catch (Exception $ex) {
+            $this->error($ex->getMessage(), [__METHOD__, $this->gitRepository->getRepositoryPath()]);
+            return false;
+        }
+    }
+
+    /**
+     * Processing the following steps:
+     * 1) git fetch
+     * 2) git checkout
+     * 3) git merge
+     *
+     * @param  string  $configRequiredConstraint
+     * @param  bool  $allowMerge
+     * @return bool
+     * @throws GitException
+     */
+    public function repositoryFetchAndMerge(string $configRequiredConstraint, bool $allowMerge = true): bool
+    {
+        // fetch repo infos
+        $this->repositoryFetch();
+
+        if ($configRequiredConstraint) {
+            // $this->debug("config required constraint: ".$configRequiredConstraint);
+            if ($checkoutName = $this->findBestTagOrBranch($configRequiredConstraint)) {
+                $this->debug(sprintf("Checkout '%s' ...", $checkoutName));
+                if (!$this->repositoryCheckout($checkoutName)) {
+                    $this->error(sprintf("Failed to checkout: %s", $checkoutName));
+                    $this->decrementIndent();
+                    return false;
+                }
+            } else {
+                $this->error(sprintf("Nothing matched to checkout with: %s", $configRequiredConstraint));
+            }
+        } else {
+            // not defined
+        }
+
+        // get current branch
+        $currentBranch = $this->getCurrentBranch();
+
+        if ($allowMerge) {
+            // Pull current branch (or just new checked out branch/version)
+            if (!$this->repositoryMerge()) {
+                $this->error(sprintf("Unable to pull branch: %s", $currentBranch));
+                $this->decrementIndent();
+                return false;
+            }
+
+            // success message
+            // $this->debug(sprintf("Repository pulled from '%s' successfully.", $currentBranch));
+
+        } else {
+            $this->debug("Process 'git pull' not allowed. Skipped.");
+        }
+
+        return true;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function repositoryMerge(): bool
+    {
+        try {
+            // remember prev commit
+            $id = $this->getCommitId();
+            $this->debug(sprintf("Commit ID: %s", $id));
+
+            // merge
+            $this->gitRepository->merge($id);
+            // compare new commit
+            if ($id !== $this->getCommitId()) {
+                $this->repositoryJustUpdated = true;
+            }
+            return true;
+        } catch (Exception $ex) {
+            $this->error($ex->getMessage(), [__METHOD__, $this->gitRepository->getRepositoryPath()]);
             return false;
         }
     }
@@ -157,8 +235,8 @@ class GitService extends BaseService
         try {
             $this->gitRepository->fetch();
             return true;
-        } catch (\Exception $ex) {
-            Log::error($ex->getMessage(), [__METHOD__]);
+        } catch (Exception $ex) {
+            $this->error($ex->getMessage(), [__METHOD__]);
             return false;
         }
     }
@@ -173,8 +251,8 @@ class GitService extends BaseService
             if ($this->gitRepository->getCurrentBranchName() !== $branchName) {
                 $this->gitRepository->checkout($branchName);
             }
-        } catch (\Exception $ex) {
-            Log::error($ex->getMessage(), [__METHOD__]);
+        } catch (Exception $ex) {
+            $this->error($ex->getMessage(), [__METHOD__]);
             return false;
         }
 
@@ -257,8 +335,8 @@ class GitService extends BaseService
         try {
             $this->gitRepository->checkout($name);
             return true;
-        } catch (\Exception $ex) {
-            Log::error($ex->getMessage(), [__METHOD__]);
+        } catch (Exception $ex) {
+            $this->error($ex->getMessage(), [__METHOD__]);
             return false;
         }
     }
