@@ -169,12 +169,13 @@ class GitService extends BaseService
         if ($configRequiredConstraint) {
             // $this->debug("config required constraint: ".$configRequiredConstraint);
             if ($checkoutName = $this->findBestTagOrBranch($configRequiredConstraint)) {
-                $this->debug(sprintf("Checkout '%s' ...", $checkoutName));
+                $this->debug(sprintf("Trying to checkout '%s' : '%s' ...", $this->gitRepository->getRepositoryPath(), $checkoutName));
                 if (!$this->repositoryCheckout($checkoutName)) {
                     $this->error(sprintf("Failed to checkout: %s", $checkoutName));
                     $this->decrementIndent();
                     return false;
                 }
+                $this->debug('OK!');
             } else {
                 $this->error(sprintf("Nothing matched to checkout with: %s", $configRequiredConstraint));
             }
@@ -212,10 +213,11 @@ class GitService extends BaseService
         try {
             // remember prev commit
             $id = $this->getCommitId();
-            $this->debug(sprintf("Commit ID: %s", $id));
+            $this->debug(sprintf("Merging commit id: %s", $id));
 
             // merge
             $this->gitRepository->merge($id);
+
             // compare new commit
             if ($id !== $this->getCommitId()) {
                 $this->repositoryJustUpdated = true;
