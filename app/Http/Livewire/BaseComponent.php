@@ -51,20 +51,22 @@ class BaseComponent extends Component
         // parent::__construct($id);
         $this->setId($id);
 
-        $this->resetMessages();
+        $this->clearMessages();
     }
 
     /**
      * Should be overwritten.
      *
      * Runs on every subsequent request, after the component is hydrated, but before an action is performed, or render() is called
+     * This doesn't run on the initial request ("mount" does)...
      *
      * @return void
      */
     protected function initHydrate(): void
     {
         // Important but may be replaced! clear messages for next interaction!
-        $this->checkResetMessages();
+        // @todo: place it to booted?
+        $this->checkClearMessages();
     }
 
     /**
@@ -127,7 +129,7 @@ class BaseComponent extends Component
      */
     protected function addMessage(string $message, string $key = 'info'): void
     {
-        $this->checkResetMessages();
+        $this->checkClearMessages();
         $this->baseMessages[$key][] = $message;
         $this->timeLastMessage = time();
     }
@@ -147,7 +149,6 @@ class BaseComponent extends Component
      */
     protected function addErrorMessages(iterable $messages): void
     {
-        Log::error('errors added: ', $messages);
         foreach ($messages as $message) {
             $this->addErrorMessage($message);
         }
@@ -173,20 +174,41 @@ class BaseComponent extends Component
 
     /**
      * @return void
+     * @internal Refresh in general seems not working without it ...
      */
-    #[On('check-reset-messages')]
-    public function checkResetMessages(): void
+    #[On('refresh')]
+    public function anotherRefresh(): void
     {
-        if (time() - $this->timeLastMessage > $this->messagesLifeTime) {
-            $this->resetMessages();
-        }
     }
 
     /**
      * @return void
      */
+    #[On('check-reset-messages')]
+    public function checkClearMessages(): void
+    {
+        if (time() - $this->timeLastMessage > $this->messagesLifeTime) {
+            $this->clearMessages();
+        }
+    }
+
+    /**
+     * Can be dispatched.
+     *
+     * @return void
+     */
     #[On('reset-messages')]
     public function resetMessages(): void
+    {
+        $this->clearMessages();
+    }
+
+    /**
+     * Call this inside instead of resetMessages()
+     *
+     * @return void
+     */
+    public function clearMessages(): void
     {
         $this->baseMessages = [
             'error'   => [],
