@@ -216,7 +216,7 @@ class GitService extends BaseService
             $this->debug(sprintf("Merging commit id: %s", $id));
 
             // merge
-            $this->gitRepository->merge($id);
+            $this->gitRepository->merge($this->gitRepository->getLastCommitId());
 
             // compare new commit
             if ($id !== $this->getCommitId()) {
