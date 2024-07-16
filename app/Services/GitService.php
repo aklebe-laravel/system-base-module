@@ -163,6 +163,9 @@ class GitService extends BaseService
      */
     public function repositoryFetchAndMerge(string $configRequiredConstraint, bool $allowMerge = true): bool
     {
+        // remember prev commit
+        $prevCommitId = $this->getCommitId();
+
         // fetch repo infos
         $this->repositoryFetch();
 
@@ -188,7 +191,7 @@ class GitService extends BaseService
 
         if ($allowMerge) {
             // Pull current branch (or just new checked out branch/version)
-            if (!$this->repositoryMerge()) {
+            if (!$this->repositoryMerge($prevCommitId)) {
                 $this->error(sprintf("Unable to pull branch: %s", $currentBranch));
                 $this->decrementIndent();
                 return false;
@@ -206,21 +209,21 @@ class GitService extends BaseService
 
 
     /**
+     * @param  string  $prevCommitId
      * @return bool
      */
-    public function repositoryMerge(): bool
+    public function repositoryMerge(string $prevCommitId): bool
     {
         try {
-            // remember prev commit
-            $id = $this->getCommitId();
-            $this->debug(sprintf("Merging commit id: %s", $id));
+            $this->debug(sprintf("Merging prev commit id: %s", $prevCommitId));
 
             // merge
             $this->gitRepository->merge($this->gitRepository->getLastCommitId());
 
             // compare new commit
-            if ($id !== $this->getCommitId()) {
+            if ($prevCommitId !== $this->getCommitId()) {
                 $this->repositoryJustUpdated = true;
+                $this->debug(sprintf("Merged to new commit id: %s", $this->gitRepository->getLastCommitId()));
             }
             return true;
         } catch (Exception $ex) {
