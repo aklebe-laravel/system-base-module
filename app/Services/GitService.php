@@ -12,6 +12,12 @@ use Modules\SystemBase\app\Services\Base\BaseService;
 
 class GitService extends BaseService
 {
+    const requireStrategyNone = 'NONE';
+    const requireStrategyDefault = 'DEFAULT';
+    const requireStrategyPull = 'PULL';
+    const requireStrategyMerge = 'MERGE';
+    const requireStrategyNoGit = 'NO_GIT'; // files only
+
     /**
      * @var GitRepository|null
      */
@@ -129,40 +135,21 @@ class GitService extends BaseService
     }
 
     /**
-     * @return bool
-     */
-    public function repositoryPull(): bool
-    {
-        try {
-            // remember prev commit
-            $id = $this->getCommitId();
-            $this->debug(sprintf("Commit ID: %s", $id));
-            // pull
-            $this->gitRepository->pull();
-            // compare new commit
-            if ($id !== $this->getCommitId()) {
-                $this->repositoryJustUpdated = true;
-            }
-            return true;
-        } catch (Exception $ex) {
-            $this->error($ex->getMessage(), [__METHOD__, $this->gitRepository->getRepositoryPath()]);
-            return false;
-        }
-    }
-
-    /**
      * Processing the following steps:
      * 1) git fetch
      * 2) git checkout
-     * 3) git merge
+     * 3) git pull/merge
      *
      * @param  string  $configRequiredConstraint
-     * @param  bool  $allowMerge
+     * @param  bool  $allowRemotePull
      * @return bool
      * @throws GitException
      */
-    public function repositoryFetchAndMerge(string $configRequiredConstraint, bool $allowMerge = true): bool
+    public function repositoryUpdate(string $configRequiredConstraint, bool $allowRemotePull = true): bool
     {
+        $strategy = config('deploy-env.require_strategy');
+        $this->debug(sprintf("Update strategy: '%s'", $strategy));
+
         // remember prev commit
         $prevCommitId = $this->getCommitId();
 
@@ -172,37 +159,33 @@ class GitService extends BaseService
         if ($configRequiredConstraint) {
             // $this->debug("config required constraint: ".$configRequiredConstraint);
             if ($checkoutName = $this->findBestTagOrBranch($configRequiredConstraint)) {
-                $this->debug(sprintf("Trying to checkout '%s' : '%s' ...", $this->gitRepository->getRepositoryPath(),
-                    $checkoutName));
-                if (!$this->repositoryCheckout($checkoutName)) {
-                    $this->error(sprintf("Failed to checkout: %s", $checkoutName));
+                if (in_array($strategy,
+                    [self::requireStrategyDefault, self::requireStrategyMerge, self::requireStrategyPull])) {
+                    $this->debug(sprintf("Trying to checkout '%s' to '%s' ...", $checkoutName,
+                        $this->gitRepository->getRepositoryPath()));
+                    if (!$this->repositoryCheckout($checkoutName)) {
+                        $this->error(sprintf("Failed to checkout: %s", $checkoutName));
+                        $this->decrementIndent();
+                        return false;
+                    }
+                }
+            } else {
+                $this->error(sprintf("Nothing matched to checkout with: %s", $configRequiredConstraint));
+                return false;
+            }
+        } // else constraint not defined, use current checked out commit
+
+        if (in_array($strategy, [self::requireStrategyDefault, self::requireStrategyPull])) {
+            if ($allowRemotePull) {
+                // Pull current branch (or just new checked out branch/version)
+                if (!$this->repositoryPull($prevCommitId)) {
+                    $this->error(sprintf("Unable to pull branch: %s", $this->getCurrentBranch()));
                     $this->decrementIndent();
                     return false;
                 }
-                $this->debug('OK!');
             } else {
-                $this->error(sprintf("Nothing matched to checkout with: %s", $configRequiredConstraint));
+                $this->debug("Process 'git pull' not allowed. Skipped.");
             }
-        } else {
-            // not defined
-        }
-
-        // get current branch
-        $currentBranch = $this->getCurrentBranch();
-
-        if ($allowMerge) {
-            // Pull current branch (or just new checked out branch/version)
-            if (!$this->repositoryMerge($prevCommitId)) {
-                $this->error(sprintf("Unable to pull branch: %s", $currentBranch));
-                $this->decrementIndent();
-                return false;
-            }
-
-            // success message
-            // $this->debug(sprintf("Repository pulled from '%s' successfully.", $currentBranch));
-
-        } else {
-            $this->debug("Process 'git pull' not allowed. Skipped.");
         }
 
         return true;
@@ -212,8 +195,9 @@ class GitService extends BaseService
     /**
      * @param  string  $prevCommitId
      * @return bool
+     * @throws GitException
      */
-    public function repositoryMerge(string $prevCommitId): bool
+    public function repositoryPull(string $prevCommitId): bool
     {
         try {
             $lastCommitId = $this->gitRepository->getLastCommitId();
