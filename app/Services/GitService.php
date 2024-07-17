@@ -172,7 +172,8 @@ class GitService extends BaseService
         if ($configRequiredConstraint) {
             // $this->debug("config required constraint: ".$configRequiredConstraint);
             if ($checkoutName = $this->findBestTagOrBranch($configRequiredConstraint)) {
-                $this->debug(sprintf("Trying to checkout '%s' : '%s' ...", $this->gitRepository->getRepositoryPath(), $checkoutName));
+                $this->debug(sprintf("Trying to checkout '%s' : '%s' ...", $this->gitRepository->getRepositoryPath(),
+                    $checkoutName));
                 if (!$this->repositoryCheckout($checkoutName)) {
                     $this->error(sprintf("Failed to checkout: %s", $checkoutName));
                     $this->decrementIndent();
@@ -215,21 +216,26 @@ class GitService extends BaseService
     public function repositoryMerge(string $prevCommitId): bool
     {
         try {
-            $this->debug(sprintf("Merging prev commit id: %s", $prevCommitId));
+            $lastCommitId = $this->gitRepository->getLastCommitId();
+            $this->debug(sprintf("Try to pull '%s' to previous '%s'", $lastCommitId, $prevCommitId));
 
             // merge
-            $this->gitRepository->merge($this->gitRepository->getLastCommitId());
+            // $this->gitRepository->merge($lastCommitId);
+            $this->gitRepository->pull(null, ['--rebase', '--prune', '--tags']);
+            // $this->gitRepository->pull(null, ['--rebase']);
 
-            // compare new commit
-            if ($prevCommitId !== $this->getCommitId()) {
-                $this->repositoryJustUpdated = true;
-                $this->debug(sprintf("Merged to new commit id: %s", $this->gitRepository->getLastCommitId()));
-            }
-            return true;
         } catch (Exception $ex) {
             $this->error($ex->getMessage(), [__METHOD__, $this->gitRepository->getRepositoryPath()]);
-            return false;
+            // Do not return false here. It could be a warning like "Unable to pull branch: (HEAD detached at xxx)" for tags
+            // return false;
         }
+
+        // compare new commit
+        if ($prevCommitId !== $this->getCommitId()) {
+            $this->repositoryJustUpdated = true;
+            $this->debug(sprintf("Current commit id: %s", $lastCommitId));
+        }
+        return true;
     }
 
     /**
@@ -238,7 +244,7 @@ class GitService extends BaseService
     public function repositoryFetch(): bool
     {
         try {
-            $this->gitRepository->fetch();
+            $this->gitRepository->fetch(null, ['--tags']);
             return true;
         } catch (Exception $ex) {
             $this->error($ex->getMessage(), [__METHOD__]);
