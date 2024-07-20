@@ -24,8 +24,8 @@ class ThemeService extends AddonObjectService
      * Enable/Disable
      *
      * @param  string  $itemName
-     * @param  bool  $status
-     * @param  bool  $ignoreIfItemExists
+     * @param  bool    $status
+     * @param  bool    $ignoreIfItemExists
      * @return bool
      */
     public function setStatus(string $itemName, bool $status, bool $ignoreIfItemExists = false): bool
@@ -80,9 +80,14 @@ class ThemeService extends AddonObjectService
     /**
      * @param  string  $path
      * @param  string  $themeName
+     * @param  int     $directoryDeep
+     * @param  array   $regexWhitelist
+     * @param  array   $regexBlacklist
+     * @param  string  $addDelimiters
      * @return array
      */
-    public function getFilesFromTheme(string $path = '', string $themeName = ''): array
+    public function getFilesFromTheme(string $path = '', string $themeName = '', int $directoryDeep = 0,
+        array $regexWhitelist = [], array $regexBlacklist = [], string $addDelimiters = ''): array
     {
         if (!$themeName) {
             $themeName = $this->getCurrentTheme();
@@ -91,17 +96,25 @@ class ThemeService extends AddonObjectService
         $result = [];
 
         if ($parentTheme = $this->getThemeParent($themeName)) {
-            $result = $this->getFilesInFolder($this->getPath($path, $parentTheme));
+            $result = $this->getFilesFromTheme($path, $parentTheme, $directoryDeep, $regexWhitelist, $regexBlacklist,
+                $addDelimiters);
         }
 
-        return array_merge($result, $this->getFilesInFolder($this->getPath($path, $themeName)));
+        return array_merge($result,
+            $this->getFilesInFolder($this->getPath($path, $themeName), $directoryDeep, $regexWhitelist, $regexBlacklist,
+                $addDelimiters));
     }
 
     /**
      * @param  string  $path
+     * @param  int     $directoryDeep
+     * @param  array   $regexWhitelist
+     * @param  array   $regexBlacklist
+     * @param  string  $addDelimiters
      * @return array
      */
-    public function getFilesInFolder(string $path): array
+    public function getFilesInFolder(string $path, int $directoryDeep = 0, array $regexWhitelist = [],
+        array $regexBlacklist = [], string $addDelimiters = ''): array
     {
         $files = [];
         if (is_dir($path)) {
@@ -117,7 +130,7 @@ class ThemeService extends AddonObjectService
                 // now we have the name "xxx.yyy.zzz" or something like that
                 $files[$viewName] = $viewName;
 
-            }, 0);
+            }, $directoryDeep, $regexWhitelist, $regexBlacklist, $addDelimiters);
 
             $files = app('system_base')->toHtmlSelectOptions($files, null, '[key]',
                 [NativeObjectBase::UNSELECT_RELATION_IDENT => __('No choice')], app('system_base')::SortModeAsc,);
@@ -130,7 +143,7 @@ class ThemeService extends AddonObjectService
      * Overwritten.
      *
      * @param  string  $itemIdentifier
-     * @param  bool  $validate
+     * @param  bool    $validate
      * @return array
      */
     public function getVendorInfo(string $itemIdentifier, bool $validate = false): array
