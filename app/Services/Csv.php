@@ -178,7 +178,7 @@ class Csv
     }
 
     /**
-     * @param  callable|null  $callbackPerRow
+     * @param  callable|null  $callbackPerRow return false to stop import
      * @param  callable|null  $callbackLowPerformance
      * @return bool
      */
@@ -210,7 +210,9 @@ class Csv
                         try
                         {
                             // callback
-                            $callbackPerRow($row);
+                            if (!$callbackPerRow($row)) {
+                                return false;
+                            }
                         }
                         catch(\Exception $ex)
                         {
