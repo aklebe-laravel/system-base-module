@@ -28,6 +28,11 @@ class SystemService extends BaseService
     const UNDEFINED_CONTENT = '##__UNDEFINED_CONTENT__##';
 
     /**
+     * @var array
+     */
+    protected array $uniqueCounters = [];
+
+    /**
      * Try always to force an array result.
      *
      * @param  mixed  $nestedObject
@@ -52,7 +57,7 @@ class SystemService extends BaseService
      * 2) No camel to snake convert
      *
      * @param  mixed  $data
-     * @param  int  $maxDeep
+     * @param  int    $maxDeep
      * @return array|mixed
      */
     public function toArrayRaw(mixed $data, int $maxDeep = 2): mixed
@@ -79,8 +84,8 @@ class SystemService extends BaseService
      *
      * @param  array  $destination
      * @param  array  $source
-     * @param  bool  $forceOverride  its like unconditional inheritance
-     * @param  bool  $ignoreNull
+     * @param  bool   $forceOverride  its like unconditional inheritance
+     * @param  bool   $ignoreNull
      * @param  array  $butForceOverrideKeys
      *
      * @return array
@@ -175,10 +180,10 @@ class SystemService extends BaseService
 
     /**
      * @param  iterable|null  $list
-     * @param  mixed|null  $valueProperty  special meaning '[key]'
-     * @param  string|null  $keyProperty  special meaning '[key]'
-     * @param  array  $first
-     * @param  int  $sortMode
+     * @param  mixed|null     $valueProperty  special meaning '[key]'
+     * @param  string|null    $keyProperty    special meaning '[key]'
+     * @param  array          $first
+     * @param  int            $sortMode
      *
      * @return array
      */
@@ -331,7 +336,7 @@ class SystemService extends BaseService
     }
 
     /**
-     * @param  mixed  $price
+     * @param  mixed        $price
      * @param  string|null  $currency
      * @param  string|null  $paymentMethodCode
      * @return string
@@ -403,7 +408,7 @@ class SystemService extends BaseService
 
     /**
      * @param  string  $name
-     * @param  float  $startTime
+     * @param  float   $startTime
      * @return void
      */
     public function logExecutionTime(string $name, float $startTime): void
@@ -416,7 +421,7 @@ class SystemService extends BaseService
      * Determine whether $subject matching one if the patterns in $patternList.
      *
      * @param  string  $subject
-     * @param  array  $patternList
+     * @param  array   $patternList
      * @param  string  $addDelimiters
      * @return bool
      */
@@ -439,9 +444,10 @@ class SystemService extends BaseService
 
     /**
      * Find module models before app models, so modules have the power to overwrite.
+     *
      * @param  string  $className
      * @param  string  $generatorKey  config key for path definition (like 'models', 'config' or 'views')
-     * @param  bool  $returnInfoData
+     * @param  bool    $returnInfoData
      * @param  string  $forceModule
      * @return string|array
      */
@@ -588,7 +594,7 @@ class SystemService extends BaseService
      * Checks whether an instance has a class or a trait.
      * This should use instead of 'instanceof' check when testing traits.
      *
-     * @param  mixed  $instance  instance or class name we want to check
+     * @param  mixed   $instance      instance or class name we want to check
      * @param  string  $classOrTrait  class or trait we are looking for (inside $instance)
      * @return bool
      */
@@ -606,7 +612,7 @@ class SystemService extends BaseService
      * Check dot path exists in object/array
      *
      * @param  mixed  $object
-     * @param $keyPath
+     * @param         $keyPath
      * @return bool
      */
     public function hasData(mixed $object, $keyPath): bool
@@ -642,4 +648,31 @@ class SystemService extends BaseService
             return app(User::class)::class;
         });
     }
+
+    /**
+     * Increment the unique counter and return it.
+     * Can be used for frontend html ids.
+     *
+     * @param  string  $key
+     * @return int
+     */
+    public function addUniqueCounter(string $key): int
+    {
+        $c = data_get($this->uniqueCounters, $key, 0);
+        data_set($this->uniqueCounters, $key, $c + 1);
+        return $this->getUniqueCounter($key);
+    }
+
+    /**
+     * Return the unique counter.
+     *
+     * @param  string  $key
+     * @return int
+     */
+    public function getUniqueCounter(string $key): int
+    {
+        return data_get($this->uniqueCounters, $key, 0);
+    }
+
+
 }
