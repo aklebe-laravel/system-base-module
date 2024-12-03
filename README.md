@@ -8,7 +8,9 @@ This module provide the most basic operations for modules and themes.
 ### Config
 See ```Config/config.php``` for supported env vars.
 
-```Modules/*/Config/message-boxes.php``` can created by any module and provides content for messages boxes in php and/or javascript.
+```Modules/*/Config/message-boxes.php``` can created by any module and provides content for messages boxes in php and/or javascript. All model configs will be merged.
+
+```Modules/*/Config/seeders.php``` can created by any module and provides adjustments for seeding. All model configs will be merged.
 
 ```Modules/*/Config/module-deploy-env.php```can created by any module and provides tasks to deploy any data in db or files. 
 
@@ -19,6 +21,7 @@ Provides a base provider all module providers can extend from. Prepares module f
 Note for all modules:
 - all configs ```Modules/*/Config/module-deploy-env.php``` will be merged
 - all configs ```Modules/*/Config/message-boxes.php``` will be merged
+- all configs ```Modules/*/Config/seeders.php``` will be merged
 
 #### ScheduleBaseServiceProvider
 Provides modules scheduler methods like ```bootEnabledSchedule``` and ```bootDisabledSchedule```.

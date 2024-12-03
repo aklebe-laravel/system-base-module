@@ -13,7 +13,7 @@ trait TraitBaseModel
 {
     /**
      * Used to detect the current inherited user model.
-     * Can be used line $this->belongsTo($this::$userClassName);
+     * Can be used like $this->belongsTo($this::$userClassName);
      *
      * @var string
      */
@@ -44,7 +44,7 @@ trait TraitBaseModel
      * @param  string  $fieldNonNumeric
      * @return void
      */
-    public function scopeLoadByFrontend(Builder $builder, mixed $fieldValue, string $fieldNonNumeric)
+    public function scopeLoadByFrontend(Builder $builder, mixed $fieldValue, string $fieldNonNumeric): void
     {
         if (is_numeric($fieldValue)) {
             $builder->whereId($fieldValue);

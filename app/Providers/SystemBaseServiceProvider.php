@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Modules\SystemBase\app\Console\Password;
 use Modules\SystemBase\app\Providers\Base\ModuleBaseServiceProvider;
 use Modules\SystemBase\app\Services\FileService;
+use Modules\SystemBase\app\Services\ModelService;
 use Modules\SystemBase\app\Services\ModuleService;
 use Modules\SystemBase\app\Services\PhpToJsService;
 use Modules\SystemBase\app\Services\SystemService;
@@ -33,7 +34,7 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
         parent::boot();
 
         $this->commands([
-            Password::class
+            Password::class,
         ]);
 
         // Make themes working
@@ -60,6 +61,7 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
         $this->app->singleton('system_base_module', ModuleService::class);
         $this->app->singleton('system_base_file', FileService::class);
         $this->app->singleton('php_to_js', PhpToJsService::class);
+        $this->app->singleton(ModelService::class, ModelService::class);
 
         $this->app->register(RouteServiceProvider::class);
         $this->app->register(BroadcastServiceProvider::class);

@@ -24,6 +24,7 @@ class ModuleService extends AddonObjectService
      * @param  string  $itemName
      * @param  bool  $status
      * @param  bool  $ignoreIfItemExists
+     *
      * @return bool
      */
     public function setStatus(string $itemName, bool $status, bool $ignoreIfItemExists = false): bool
@@ -50,6 +51,7 @@ class ModuleService extends AddonObjectService
      * @param  string  $path
      * @param  string  $itemName  (Module StudlyName)
      * @param  string  $generatorKey  config key for path definition (like 'config' or 'views')
+     *
      * @return string
      */
     public static function getPath(string $path, string $itemName, string $generatorKey = ''): string
@@ -65,6 +67,7 @@ class ModuleService extends AddonObjectService
         if ($path) {
             $result .= '/'.$path;
         }
+
         return $result;
     }
 
@@ -72,6 +75,7 @@ class ModuleService extends AddonObjectService
      * @param  string  $itemName  (Module StudlyName)
      * @param  string  $generatorKey  config key for path definition (like 'models', 'config' or 'views')
      * @param  string  $classPath
+     *
      * @return string
      */
     public static function getNamespace(string $itemName, string $generatorKey, string $classPath): string
@@ -85,6 +89,7 @@ class ModuleService extends AddonObjectService
 
         $path = str_replace('/', "\\", $path);
         $path = sprintf('%s\%s\%s\%s', config('modules.namespace', 'Modules'), $itemName, $path, $classPath);
+
         return $path;
     }
 
@@ -94,6 +99,7 @@ class ModuleService extends AddonObjectService
      * Snake names have '-' notation by default!
      *
      * @param  Module|string  $item
+     *
      * @return string
      */
     public static function getSnakeName(mixed $item): string
@@ -109,6 +115,7 @@ class ModuleService extends AddonObjectService
      * Get the snake name of a model.
      *
      * @param  string  $model
+     *
      * @return string
      */
     public static function getModelSnakeName(string $model): string
@@ -123,10 +130,10 @@ class ModuleService extends AddonObjectService
      * @param  callable  $callback  parameters like callback(!Module $module)
      * @param  bool  $reverse  backward sort by priority
      * @param  bool  $inclusiveApp  add item null for app
+     *
      * @return bool True if all modules returned true. Otherwise, false.
      */
-    public static function runOrderedEnabledModules(callable $callback, bool $reverse = false,
-        bool $inclusiveApp = false): bool
+    public static function runOrderedEnabledModules(callable $callback, bool $reverse = false, bool $inclusiveApp = false): bool
     {
         $list = ModuleFacade::getOrdered($reverse ? 'desc' : 'asc');
         if ($inclusiveApp) {
@@ -152,6 +159,7 @@ class ModuleService extends AddonObjectService
 
     /**
      * @param  string  $name  name in studly, lower or snake case
+     *
      * @return bool
      */
     public function moduleExists(string $name): bool
@@ -160,10 +168,13 @@ class ModuleService extends AddonObjectService
         $this->runOrderedEnabledModules(function (?Module $module) use ($name, &$found) {
             if (($module->getStudlyName() === $name) || ($module->getSnakeName() === $name) || ($module->getLowerName() === $name)) {
                 $found = true;
+
                 return false; // stop module loop
             }
+
             return true;
         });
+
         return $found;
     }
 
@@ -173,6 +184,7 @@ class ModuleService extends AddonObjectService
      * Otherwise, data will be calculated (to prepare/create/clone it)
      *
      * @param  string|Module  $item
+     *
      * @return array
      */
     public function getItemInfo(mixed $item): array
@@ -245,6 +257,7 @@ class ModuleService extends AddonObjectService
      * Modules are ordered by priority.
      *
      * @param  bool  $enabledOnly
+     *
      * @return Collection
      */
     public function getItemInfoList(bool $enabledOnly = true): Collection
@@ -270,6 +283,59 @@ class ModuleService extends AddonObjectService
         }
 
         return $itemList;
+    }
+
+    /**
+     * @param  string  $itemName
+     * @param  string  $generatorKey
+     * @param  bool  $usePrefix
+     * @param  array  $blackList  can contains alias or simple model name or full model name
+     *
+     * @return array
+     */
+    public static function getAllClassesInPath(string $itemName, string $generatorKey, bool $usePrefix = true, array $blackList = []): array
+    {
+        $declaredClassesInNamespace = [];
+        $path = self::getPath('', $itemName, $generatorKey);
+        if ($scanDirList = scandir($path)) {
+            foreach ($scanDirList as $file) {
+                $fullPath = $path.'/'.$file;
+                if (is_file($fullPath)) {
+                    $pi = pathinfo($fullPath);
+                    if ($modelName = $pi['filename']) {
+                        //$key = Str::snake($modelName, '_');
+                        $key = self::getModelSnakeName($modelName, '_');
+                        if ($usePrefix) {
+                            $key = $generatorKey.'-'.$key;
+                        }
+                        $fullModelName = self::getNamespace($itemName, $generatorKey, $modelName);
+                        if (in_array($key, $blackList) || in_array($modelName, $blackList) || in_array($fullModelName, $blackList)) {
+                            continue;
+                        }
+                        $declaredClassesInNamespace[$key] = $fullModelName;
+                    }
+                }
+            }
+        }
+
+        return $declaredClassesInNamespace;
+    }
+
+    /**
+     * @param  string  $generatorKey
+     *
+     * @return array
+     */
+    public static function getAllBindings(string $generatorKey = 'model'): array
+    {
+        $result = [];
+        foreach (array_keys(app()->getBindings()) as $binding) {
+            if (Str::startsWith($binding, $generatorKey.'-')) {
+                $result[] = $binding;
+            }
+        }
+
+        return $result;
     }
 
 }

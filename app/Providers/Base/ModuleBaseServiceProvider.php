@@ -19,6 +19,15 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
     protected string $moduleNameLower = 'xxx';
 
     /**
+     * Alias bindings for models.
+     * Adjust it in your register() before you call parent::register()
+     * recommend to use prefix "model-" (for example for user:  "model-user")
+     *
+     * @var array
+     */
+    protected array $modelAliases = [];
+
+    /**
      * Boot the application events.
      *
      * @return void
@@ -38,6 +47,10 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
+        // bind model aliases (by default when parent::register() in your module)
+        foreach ($this->modelAliases as $alias => $class) {
+            $this->app->bind($alias, $class);
+        }
     }
 
     /**
@@ -45,6 +58,7 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
      *
      * @param  string  $key
      * @param  bool  $perModule
+     *
      * @return void
      */
     protected function mergeConfigEx(string $key, bool $perModule = false): void
@@ -86,6 +100,7 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
             } catch (\Exception $ex) {
                 Log::error($ex->getMessage(), [__METHOD__]);
             }
+
             return true;
         });
 
@@ -109,6 +124,7 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
 
             // config for modules all in one accessed by 'xxx.yyy'
             $this->mergeConfigEx('message-boxes');
+            $this->mergeConfigEx('seeders');
 
             //
             $this->mergeCombinedConfigs();
@@ -129,7 +145,7 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
         $sourcePath = ModuleService::getPath('', $this->moduleName, 'views');
 
         $this->publishes([
-            $sourcePath => $viewPath
+            $sourcePath => $viewPath,
         ], ['views', $this->moduleNameLower.'-module-views']);
 
         $this->loadViewsFrom(array_merge($this->getPublishableViewPaths(), [$sourcePath]), $this->moduleNameLower);
@@ -175,6 +191,7 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
                 $paths[] = $path.'/modules/'.$this->moduleNameLower;
             }
         }
+
         return $paths;
     }
 }
