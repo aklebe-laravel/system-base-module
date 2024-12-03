@@ -36,6 +36,7 @@ class SystemService extends BaseService
      * Try always to force an array result.
      *
      * @param  mixed  $nestedObject
+     *
      * @return mixed
      */
     public function toArray(mixed $nestedObject): mixed
@@ -57,7 +58,8 @@ class SystemService extends BaseService
      * 2) No camel to snake convert
      *
      * @param  mixed  $data
-     * @param  int    $maxDeep
+     * @param  int  $maxDeep
+     *
      * @return array|mixed
      */
     public function toArrayRaw(mixed $data, int $maxDeep = 2): mixed
@@ -69,6 +71,7 @@ class SystemService extends BaseService
                     $result[$key] = (is_array($value) || is_object($value)) ? $this->toArrayRaw($value,
                         $maxDeep - 1) : $value;
                 }
+
                 return $result;
             }
         }
@@ -84,14 +87,13 @@ class SystemService extends BaseService
      *
      * @param  array  $destination
      * @param  array  $source
-     * @param  bool   $forceOverride  its like unconditional inheritance
-     * @param  bool   $ignoreNull
+     * @param  bool  $forceOverride  its like unconditional inheritance
+     * @param  bool  $ignoreNull
      * @param  array  $butForceOverrideKeys
      *
      * @return array
      */
-    public static function arrayMergeRecursiveDistinct(array &$destination, array &$source, bool $forceOverride = false,
-        bool $ignoreNull = true, array $butForceOverrideKeys = []): array
+    public static function arrayMergeRecursiveDistinct(array &$destination, array &$source, bool $forceOverride = false, bool $ignoreNull = true, array $butForceOverrideKeys = []): array
     {
         foreach ($source as $key => &$value) {
             if (is_array($value) && isset($destination[$key]) && is_array($destination[$key])) {
@@ -109,6 +111,7 @@ class SystemService extends BaseService
     /**
      * @param  array  $a
      * @param  array  $b
+     *
      * @return bool
      */
     public function arrayCompareIsBInA(array &$a, array &$b): bool
@@ -139,6 +142,7 @@ class SystemService extends BaseService
     /**
      * @param  array  $a
      * @param  array  $b
+     *
      * @return bool
      */
     public function arrayCompareIsEqual(array &$a, array &$b): bool
@@ -160,6 +164,7 @@ class SystemService extends BaseService
      * @param  array  $arrayDest
      * @param  array  $arraySrc
      * @param  array  $whitelistArray
+     *
      * @return array
      */
     public function arrayRootCopyWhitelistedNoArrays(array &$arrayDest, array $arraySrc, array $whitelistArray): array
@@ -180,15 +185,14 @@ class SystemService extends BaseService
 
     /**
      * @param  iterable|null  $list
-     * @param  mixed|null     $valueProperty  special meaning '[key]'
-     * @param  string|null    $keyProperty    special meaning '[key]'
-     * @param  array          $first
-     * @param  int            $sortMode
+     * @param  mixed|null  $valueProperty  special meaning '[key]'
+     * @param  string|null  $keyProperty  special meaning '[key]'
+     * @param  array  $first
+     * @param  int  $sortMode
      *
      * @return array
      */
-    public function toHtmlSelectOptions(?iterable $list, mixed $valueProperty = null, string $keyProperty = null,
-        array $first = [], int $sortMode = self::SortModeNone): array
+    public function toHtmlSelectOptions(?iterable $list, mixed $valueProperty = null, string $keyProperty = null, array $first = [], int $sortMode = self::SortModeNone): array
     {
         $options = [];
         if ($list) {
@@ -281,16 +285,19 @@ class SystemService extends BaseService
 
     /**
      * @param  string  $classNameWithoutNamespace
+     *
      * @return Model
      */
     public function getEloquentModel(string $classNameWithoutNamespace): Model
     {
         $moduleClass = $this->findModuleClass($classNameWithoutNamespace);
+
         return App::make($moduleClass);
     }
 
     /**
      * @param  string  $classNameWithoutNamespace
+     *
      * @return Builder
      */
     public function getEloquentModelBuilder(string $classNameWithoutNamespace): Builder
@@ -299,31 +306,10 @@ class SystemService extends BaseService
     }
 
     /**
-     * @param $class
-     * @return bool
-     */
-    public function livewireComponentExists($class): bool
-    {
-        $manifest = app(\Livewire\LivewireComponentsFinder::class)->getManifest();
-
-        return (bool) array_key_exists($class, $manifest);
-    }
-
-    /**
-     * @param $class
-     * @return bool
-     */
-    public function livewireComponentClassExists($class): bool
-    {
-        $manifest = app(\Livewire\LivewireComponentsFinder::class)->getManifest();
-
-        return (bool) array_search($class, $manifest);
-    }
-
-    /**
      * Extracts the classname from a full namespace.
      *
      * @param  string  $fullNamespace
+     *
      * @return string classname or empty string
      */
     public function getSimpleClassName(string $fullNamespace): string
@@ -336,9 +322,10 @@ class SystemService extends BaseService
     }
 
     /**
-     * @param  mixed        $price
+     * @param  mixed  $price
      * @param  string|null  $currency
      * @param  string|null  $paymentMethodCode
+     *
      * @return string
      */
     public function getPriceFormatted(mixed $price, ?string $currency = '', ?string $paymentMethodCode = ''): string
@@ -363,6 +350,7 @@ class SystemService extends BaseService
 
     /**
      * @param $time
+     *
      * @return string
      */
     public function formatDate($time): string
@@ -375,6 +363,7 @@ class SystemService extends BaseService
 
     /**
      * @param $time
+     *
      * @return string
      */
     public function formatTime($time): string
@@ -387,6 +376,7 @@ class SystemService extends BaseService
 
     /**
      * @param $time
+     *
      * @return string
      */
     public function formatTimeDiff($time): string
@@ -399,6 +389,7 @@ class SystemService extends BaseService
 
     /**
      * @param  float  $startTime
+     *
      * @return float
      */
     public function getExecutionTime(float $startTime): float
@@ -408,21 +399,22 @@ class SystemService extends BaseService
 
     /**
      * @param  string  $name
-     * @param  float   $startTime
+     * @param  float  $startTime
+     *
      * @return void
      */
     public function logExecutionTime(string $name, float $startTime): void
     {
-        $this->debug('Laravel "'.$name.'" execution time: '.number_format($this->getExecutionTime($startTime), 2, '.',
-                '').' sec');
+        $this->debug('Script "'.$name.'" execution time: '.number_format($this->getExecutionTime($startTime), 2, '.', '').' sec');
     }
 
     /**
      * Determine whether $subject matching one if the patterns in $patternList.
      *
      * @param  string  $subject
-     * @param  array   $patternList
+     * @param  array  $patternList
      * @param  string  $addDelimiters
+     *
      * @return bool
      */
     public function isInRegexList(string $subject, array $patternList = [], string $addDelimiters = ''): bool
@@ -447,15 +439,16 @@ class SystemService extends BaseService
      *
      * @param  string  $className
      * @param  string  $generatorKey  config key for path definition (like 'models', 'config' or 'views')
-     * @param  bool    $returnInfoData
+     * @param  bool  $returnInfoData
      * @param  string  $forceModule
+     *
      * @return string|array
      */
-    public function findModuleClass(string $className, string $generatorKey = 'model', bool $returnInfoData = false,
-        string $forceModule = ''): string|array
+    public function findModuleClass(string $className, string $generatorKey = 'model', bool $returnInfoData = false, string $forceModule = ''): string|array
     {
         $ttlDefault = config('system-base.cache.default_ttl', 1);
         $ttl = config('system-base.cache.object.signature.ttl', $ttlDefault);
+
         return Cache::remember("findModule_{$forceModule}_{$className}_{$generatorKey}_".($returnInfoData ? '1' : '0'),
             $ttl, function () use ($className, $generatorKey, $returnInfoData, $forceModule) {
 
@@ -483,6 +476,7 @@ class SystemService extends BaseService
                                     'module_snake_name' => $moduleService->getSnakeName($module),
                                 ];
                             }
+
                             return $currentClassNameGenerated;
                         }
                     } catch (\Exception) {
@@ -501,6 +495,7 @@ class SystemService extends BaseService
                                 'module_snake_name' => '',
                             ];
                         }
+
                         return $currentClassNameGenerated;
                     }
                 } catch (\Exception) {
@@ -509,6 +504,7 @@ class SystemService extends BaseService
                 if ($returnInfoData) {
                     return [];
                 }
+
                 return "";
             });
 
@@ -516,6 +512,7 @@ class SystemService extends BaseService
 
     /**
      * @param  string  $modelClass
+     *
      * @return string
      */
     public function getModelTable(string $modelClass): string
@@ -523,6 +520,7 @@ class SystemService extends BaseService
         // find table name to avoid ambiguous columns
         $ttlDefault = config('system-base.cache.default_ttl', 1);
         $ttl = config('system-base.cache.db.signature.ttl', $ttlDefault);
+
         return Cache::remember('table_name_of_model_'.$modelClass, $ttl, function () use ($modelClass) {
             return app($modelClass)->getTable();
         });
@@ -532,6 +530,7 @@ class SystemService extends BaseService
      * @param  string  $className
      * @param  string  $generatorKey  config key for path definition (like 'models', 'config' or 'views')
      * @param  string  $forceModule
+     *
      * @return string
      * @throws \Exception
      */
@@ -564,17 +563,20 @@ class SystemService extends BaseService
      * Get all translation as list indexed by language.
      *
      * @param  array  $langList
+     *
      * @return array
      */
     public function getTranslations(array $langList = ['de']): array
     {
         $ttlDefault = config('system-base.cache.default_ttl', 1);
         $ttl = config('system-base.cache.translations.ttl', $ttlDefault);
+
         return Cache::remember('system_base_translations_'.json_encode($langList), $ttl, function () use ($langList) {
             $result = [];
             foreach ($langList as $lang) {
                 $result[$lang] = trans('*', [], $lang);
             }
+
             return $result;
         });
     }
@@ -583,6 +585,7 @@ class SystemService extends BaseService
      * Toggle global debug mode.
      *
      * @param  bool  $debugEnabled
+     *
      * @return void
      */
     public function switchEnvDebug(bool $debugEnabled): void
@@ -594,8 +597,9 @@ class SystemService extends BaseService
      * Checks whether an instance has a class or a trait.
      * This should use instead of 'instanceof' check when testing traits.
      *
-     * @param  mixed   $instance      instance or class name we want to check
+     * @param  mixed  $instance  instance or class name we want to check
      * @param  string  $classOrTrait  class or trait we are looking for (inside $instance)
+     *
      * @return bool
      */
     public function hasInstanceClassOrTrait(mixed $instance, string $classOrTrait): bool
@@ -613,6 +617,7 @@ class SystemService extends BaseService
      *
      * @param  mixed  $object
      * @param         $keyPath
+     *
      * @return bool
      */
     public function hasData(mixed $object, $keyPath): bool
@@ -624,12 +629,14 @@ class SystemService extends BaseService
      * get cached columns
      *
      * @param  string  $tableName
+     *
      * @return array
      */
     public function getDbColumns(string $tableName): array
     {
         $ttlDefault = config('system-base.cache.default_ttl', 1);
         $ttl = config('system-base.cache.db.signature.ttl', $ttlDefault);
+
         return Cache::remember('db_columns_from_table_'.$tableName, $ttl, function () use ($tableName) {
             return Schema::getColumnListing($tableName);
         });
@@ -644,6 +651,7 @@ class SystemService extends BaseService
     {
         $ttlDefault = config('system-base.cache.default_ttl', 1);
         $ttl = config('system-base.cache.object.signature.ttl', $ttlDefault);
+
         return Cache::remember('current_user_class_name', $ttl, function () {
             return app(User::class)::class;
         });
@@ -654,12 +662,14 @@ class SystemService extends BaseService
      * Can be used for frontend html ids.
      *
      * @param  string  $key
+     *
      * @return int
      */
     public function addUniqueCounter(string $key): int
     {
         $c = data_get($this->uniqueCounters, $key, 0);
         data_set($this->uniqueCounters, $key, $c + 1);
+
         return $this->getUniqueCounter($key);
     }
 
@@ -667,6 +677,7 @@ class SystemService extends BaseService
      * Return the unique counter.
      *
      * @param  string  $key
+     *
      * @return int
      */
     public function getUniqueCounter(string $key): int
@@ -674,5 +685,22 @@ class SystemService extends BaseService
         return data_get($this->uniqueCounters, $key, 0);
     }
 
+    /**
+     * @param  array  $sourceList
+     * @param  array  $regexPatternBlacklist
+     *
+     * @return array
+     */
+    public function removeBlacklistItems(array $sourceList, array $regexPatternBlacklist = []): array
+    {
+        $result = [];
+        foreach ($sourceList as $sourceValue) {
+            if (!$this->isInRegexList($sourceValue, $regexPatternBlacklist)) {
+                $result[] = $sourceValue;
+            }
+        }
+
+        return $result;
+    }
 
 }

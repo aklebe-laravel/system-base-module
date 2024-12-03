@@ -2,19 +2,16 @@
 
 namespace Modules\SystemBase\database\seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Database\Eloquent\Model;
-
-class SystemBaseDatabaseSeeder extends Seeder
+class SystemBaseDatabaseModelSeeder extends BaseModelSeeder
 {
     /**
      * Run the database seeds.
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
-        Model::unguard();
+        parent::run();
 
         // $this->call("OthersTableSeeder");
     }
