@@ -45,7 +45,7 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         // bind model aliases (by default when parent::register() in your module)
         foreach ($this->modelAliases as $alias => $class) {
@@ -175,7 +175,7 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
      *
      * @return array
      */
-    public function provides()
+    public function provides(): array
     {
         return [];
     }

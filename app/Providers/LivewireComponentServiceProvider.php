@@ -23,7 +23,7 @@ class LivewireComponentServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->registerModuleComponents();
 
@@ -35,7 +35,7 @@ class LivewireComponentServiceProvider extends ServiceProvider
      *
      * @return array
      */
-    public function provides()
+    public function provides(): array
     {
         return [];
     }

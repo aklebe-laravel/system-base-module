@@ -11,7 +11,7 @@ class ScheduleBaseServiceProvider extends ServiceProvider
     /**
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->app->booted(function () {
 
@@ -63,7 +63,7 @@ class ScheduleBaseServiceProvider extends ServiceProvider
     /**
      * @return void
      */
-    public function register()
+    public function register(): void
     {
     }
 }
