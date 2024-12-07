@@ -46,9 +46,11 @@ class Csv
     public string $folder = "";
 
     /**
+     * Starting from 1
+     *
      * @var int
      */
-    protected int $currentRowNumber = 1;
+    public int $currentRowNumber = 1;
 
     /**
      * @var int

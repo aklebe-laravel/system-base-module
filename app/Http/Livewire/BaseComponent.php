@@ -11,7 +11,7 @@ class BaseComponent extends Component
     /**
      * Restrictions to allow this component.
      */
-    const aclResources = [];
+    const array aclResources = [];
 
     /**
      * Frontend messages.

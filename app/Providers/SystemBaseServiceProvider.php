@@ -2,6 +2,7 @@
 
 namespace Modules\SystemBase\app\Providers;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Modules\SystemBase\app\Console\Password;
@@ -56,6 +57,9 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
     public function register(): void
     {
         parent::register();
+
+        // user shorthand
+        $this->app->bind('user', User::class);
 
         $this->app->singleton('system_base', SystemService::class);
         $this->app->singleton('system_base_module', ModuleService::class);
