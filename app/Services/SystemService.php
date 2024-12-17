@@ -3,8 +3,12 @@
 namespace Modules\SystemBase\app\Services;
 
 use App\Models\User;
+use Closure;
+use Exception;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -14,18 +18,18 @@ use Nwidart\Modules\Facades\Module;
 
 class SystemService extends BaseService
 {
-    const dateIsoFormat8601 = 'Y-m-d H:i:s';
+    const string dateIsoFormat8601 = 'Y-m-d H:i:s';
 
-    const SortModeNone = 0x0000;
-    const SortModeByKey = 0x0001;
-    const SortModeByValue = 0x0002;
-    const SortModeAsc = 0x0100;
-    const SortModeDesc = 0x0200;
+    const int SortModeNone = 0x0000;
+    const int SortModeByKey = 0x0001;
+    const int SortModeByValue = 0x0002;
+    const int SortModeAsc = 0x0100;
+    const int SortModeDesc = 0x0200;
 
     /**
      *
      */
-    const UNDEFINED_CONTENT = '##__UNDEFINED_CONTENT__##';
+    const string UNDEFINED_CONTENT = '##__UNDEFINED_CONTENT__##';
 
     /**
      * @var array
@@ -58,7 +62,7 @@ class SystemService extends BaseService
      * 2) No camel to snake convert
      *
      * @param  mixed  $data
-     * @param  int  $maxDeep
+     * @param  int    $maxDeep
      *
      * @return array|mixed
      */
@@ -66,13 +70,10 @@ class SystemService extends BaseService
     {
         if ($maxDeep >= 1) {
             if (is_array($data) || is_object($data)) {
-                $result = [];
-                foreach ($data as $key => $value) {
-                    $result[$key] = (is_array($value) || is_object($value)) ? $this->toArrayRaw($value,
+                return array_map(function ($value) use ($maxDeep) {
+                    return (is_array($value) || is_object($value)) ? $this->toArrayRaw($value,
                         $maxDeep - 1) : $value;
-                }
-
-                return $result;
+                }, $data);
             }
         }
 
@@ -87,8 +88,8 @@ class SystemService extends BaseService
      *
      * @param  array  $destination
      * @param  array  $source
-     * @param  bool  $forceOverride  its like unconditional inheritance
-     * @param  bool  $ignoreNull
+     * @param  bool   $forceOverride  its like unconditional inheritance
+     * @param  bool   $ignoreNull
      * @param  array  $butForceOverrideKeys
      *
      * @return array
@@ -185,10 +186,10 @@ class SystemService extends BaseService
 
     /**
      * @param  iterable|null  $list
-     * @param  mixed|null  $valueProperty  special meaning '[key]'
-     * @param  string|null  $keyProperty  special meaning '[key]'
-     * @param  array  $first
-     * @param  int  $sortMode
+     * @param  mixed|null     $valueProperty  special meaning '[key]'
+     * @param  string|null    $keyProperty    special meaning '[key]'
+     * @param  array          $first
+     * @param  int            $sortMode
      *
      * @return array
      */
@@ -280,13 +281,14 @@ class SystemService extends BaseService
      */
     public function isCallableClosure($f): bool
     {
-        return ($f instanceof \Closure);
+        return ($f instanceof Closure);
     }
 
     /**
      * @param  string  $classNameWithoutNamespace
      *
      * @return Model
+     * @throws BindingResolutionException
      */
     public function getEloquentModel(string $classNameWithoutNamespace): Model
     {
@@ -299,6 +301,7 @@ class SystemService extends BaseService
      * @param  string  $classNameWithoutNamespace
      *
      * @return Builder
+     * @throws BindingResolutionException
      */
     public function getEloquentModelBuilder(string $classNameWithoutNamespace): Builder
     {
@@ -322,7 +325,7 @@ class SystemService extends BaseService
     }
 
     /**
-     * @param  mixed  $price
+     * @param  mixed        $price
      * @param  string|null  $currency
      * @param  string|null  $paymentMethodCode
      *
@@ -355,10 +358,9 @@ class SystemService extends BaseService
      */
     public function formatDate($time): string
     {
-        $timeLocale = \Illuminate\Support\Carbon::parse($time)->locale('de');
-        $d = $timeLocale->dayName.', '.$timeLocale->translatedFormat('d.m.Y');
+        $timeLocale = Carbon::parse($time)->locale('de');
 
-        return $d;
+        return $timeLocale->dayName.', '.$timeLocale->translatedFormat('d.m.Y');
     }
 
     /**
@@ -368,10 +370,9 @@ class SystemService extends BaseService
      */
     public function formatTime($time): string
     {
-        $timeLocale = \Illuminate\Support\Carbon::parse($time)->locale('de');
-        $d = $timeLocale->translatedFormat('H:i').'h ';
+        $timeLocale = Carbon::parse($time)->locale('de');
 
-        return $d;
+        return $timeLocale->translatedFormat('H:i').'h ';
     }
 
     /**
@@ -381,38 +382,40 @@ class SystemService extends BaseService
      */
     public function formatTimeDiff($time): string
     {
-        $timeLocale = \Illuminate\Support\Carbon::parse($time)->locale('de');
-        $d = $timeLocale->shortAbsoluteDiffForHumans();
+        $timeLocale = Carbon::parse($time)->locale('de');
 
-        return $d;
+        return $timeLocale->shortAbsoluteDiffForHumans();
     }
 
     /**
-     * @param  float  $startTime
+     * @param  float|null  $startTime
      *
      * @return float
      */
-    public function getExecutionTime(float $startTime): float
+    public function getExecutionTime(?float $startTime = null): float
     {
+        if ($startTime === null) {
+            $startTime = LARAVEL_START;
+        }
+
         return microtime(true) - $startTime;
     }
 
     /**
      * @param  string  $name
-     * @param  float  $startTime
      *
      * @return void
      */
-    public function logExecutionTime(string $name, float $startTime): void
+    public function logExecutionTime(string $name): void
     {
-        $this->debug('Script "'.$name.'" execution time: '.number_format($this->getExecutionTime($startTime), 2, '.', '').' sec');
+        $this->debug('Script "'.$name.'" execution time: '.number_format($this->getExecutionTime(), 2, '.', '').' sec');
     }
 
     /**
      * Determine whether $subject matching one if the patterns in $patternList.
      *
      * @param  string  $subject
-     * @param  array  $patternList
+     * @param  array   $patternList
      * @param  string  $addDelimiters
      *
      * @return bool
@@ -439,7 +442,7 @@ class SystemService extends BaseService
      *
      * @param  string  $className
      * @param  string  $generatorKey  config key for path definition (like 'models', 'config' or 'views')
-     * @param  bool  $returnInfoData
+     * @param  bool    $returnInfoData
      * @param  string  $forceModule
      *
      * @return string|array
@@ -463,8 +466,7 @@ class SystemService extends BaseService
                         continue;
                     }
 
-                    $currentClassNameGenerated = ModuleService::getNamespace($module->getStudlyName(), $generatorKey,
-                        $className);
+                    $currentClassNameGenerated = ModuleService::getNamespace($module->getStudlyName(), $generatorKey, $className);
 
                     try {
                         if (class_exists($currentClassNameGenerated)) {
@@ -479,7 +481,7 @@ class SystemService extends BaseService
 
                             return $currentClassNameGenerated;
                         }
-                    } catch (\Exception) {
+                    } catch (Exception) {
                     }
                 }
 
@@ -498,9 +500,10 @@ class SystemService extends BaseService
 
                         return $currentClassNameGenerated;
                     }
-                } catch (\Exception) {
+                } catch (Exception) {
                 }
 
+                // if info data wanted, return at least an empty object!
                 if ($returnInfoData) {
                     return [];
                 }
@@ -532,13 +535,14 @@ class SystemService extends BaseService
      * @param  string  $forceModule
      *
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     public function findLivewire(string $className, string $generatorKey = '', string $forceModule = ''): string
     {
         // Get class infos like module ...
         if (!($classInfo = $this->findModuleClass($className, $generatorKey, true, $forceModule))) {
-            throw new \Exception('Missing livewire component: '.$className);
+            throw new Exception('Missing livewire component: '.$className);
+            //$className = BaseDataTable::class;
         }
 
         $livewireName = data_get($classInfo, 'module_snake_name');
@@ -597,7 +601,7 @@ class SystemService extends BaseService
      * Checks whether an instance has a class or a trait.
      * This should use instead of 'instanceof' check when testing traits.
      *
-     * @param  mixed  $instance  instance or class name we want to check
+     * @param  mixed   $instance      instance or class name we want to check
      * @param  string  $classOrTrait  class or trait we are looking for (inside $instance)
      *
      * @return bool
@@ -703,4 +707,19 @@ class SystemService extends BaseService
         return $result;
     }
 
+    /**
+     * @param $bytes
+     *
+     * @return string
+     */
+    public function bytesToHuman($bytes): string
+    {
+        $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
+
+        for ($i = 0; $bytes > 1024; $i++) {
+            $bytes /= 1024;
+        }
+
+        return round($bytes, 2).' '.$units[$i];
+    }
 }

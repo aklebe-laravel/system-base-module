@@ -12,6 +12,7 @@ use Modules\SystemBase\app\Services\ModelService;
 use Modules\SystemBase\app\Services\ModuleService;
 use Modules\SystemBase\app\Services\PhpToJsService;
 use Modules\SystemBase\app\Services\SystemService;
+use Shipu\Themevel\Middleware\WebMiddleware;
 
 class SystemBaseServiceProvider extends ModuleBaseServiceProvider
 {
@@ -39,7 +40,7 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
         ]);
 
         // Make themes working
-        Route::pushMiddlewareToGroup('web', \Shipu\Themevel\Middleware\WebMiddleware::class);
+        Route::pushMiddlewareToGroup('web', WebMiddleware::class);
 
         // @todo: find accurate place
         $channelPrefix = Str::studly(env('BROADCAST_CHANNEL_PREFIX'));
@@ -68,7 +69,6 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
         $this->app->singleton(ModelService::class, ModelService::class);
 
         $this->app->register(RouteServiceProvider::class);
-        $this->app->register(BroadcastServiceProvider::class);
         $this->app->register(LivewireComponentServiceProvider::class);
         $this->app->register(ScheduleServiceProvider::class);
     }

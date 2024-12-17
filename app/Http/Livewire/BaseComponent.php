@@ -119,12 +119,32 @@ class BaseComponent extends Component
      */
     public function booted(): void
     {
+        $this->initBeforeRender();
         $this->initBooted();
+    }
+
+    /**
+     * Add stuff like messagebox buttons here
+     *
+     * @return void
+     */
+    protected function initBeforeRender(): void
+    {
+        $this->addMessageBoxButton('accept');
+        $this->addMessageBoxButton('cancel');
+        $this->addMessageBoxButton('claim');
+        $this->addMessageBoxButton('close');
+        $this->addMessageBoxButton('delete-item');
+        $this->addMessageBoxButton('launch');
+        $this->addMessageBoxButton('launch-item');
+        $this->addMessageBoxButton('save');
+        $this->addMessageBoxButton('simulate-item');
     }
 
     /**
      * @param  string  $message
      * @param  string  $key
+     *
      * @return void
      */
     protected function addMessage(string $message, string $key = 'info'): void
@@ -136,6 +156,7 @@ class BaseComponent extends Component
 
     /**
      * @param  string  $message
+     *
      * @return void
      */
     protected function addErrorMessage(string $message): void
@@ -145,6 +166,7 @@ class BaseComponent extends Component
 
     /**
      * @param  iterable  $messages
+     *
      * @return void
      */
     protected function addErrorMessages(iterable $messages): void
@@ -156,6 +178,7 @@ class BaseComponent extends Component
 
     /**
      * @param  string  $message
+     *
      * @return void
      */
     protected function addSuccessMessage(string $message): void
@@ -165,6 +188,7 @@ class BaseComponent extends Component
 
     /**
      * @param  string  $message
+     *
      * @return void
      */
     protected function addInfoMessage(string $message): void
@@ -237,8 +261,9 @@ class BaseComponent extends Component
      * Building a string for wire:click="..."
      *
      * @param  string  $methodName
-     * @param  array  $params
-     * @param  bool  $fistParamId
+     * @param  array   $params
+     * @param  bool    $fistParamId
+     *
      * @return string
      */
     protected function getWireCallString(string $methodName, array $params = [], bool $fistParamId = true): string
@@ -248,7 +273,23 @@ class BaseComponent extends Component
         }
         $params = array_map(fn($x) => "'".$x."'", $params);
         $paramsStr = implode(",", $params);
+
         return $methodName.'('.$paramsStr.');';
+    }
+
+    /**
+     * @param  string       $name
+     * @param  string       $module
+     * @param  string|null  $viewPath
+     *
+     * @return void
+     */
+    protected function addMessageBoxButton(string $name, string $module = 'system-base', ?string $viewPath = null): void
+    {
+        app('php_to_js')->addData(
+            'messageBoxes.'.$name,
+            view($viewPath ?? $module.'::inc.message-box.buttons.'.$name)->render()
+        );
     }
 
 }

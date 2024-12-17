@@ -11,12 +11,13 @@ class FileService extends BaseService
 {
     /**
      * @param $unsafeFilename
+     *
      * @return array|string
      */
     public function sanitize($unsafeFilename): array|string
     {
         // our list of "unsafe characters", add/remove characters if necessary
-        $dangerousCharacters = array(" ", '"', "'", "&", "/", "\\", "?", "#");
+        $dangerousCharacters = [" ", '"', "'", "&", "/", "\\", "?", "#"];
 
         // every forbidden character is replaced by an underscore
         $safeFilename = str_replace($dangerousCharacters, '_', $unsafeFilename);
@@ -29,14 +30,12 @@ class FileService extends BaseService
      * Delete folder/files recursive
      *
      * @param  string  $directory
-     * @param  int  $timespanInSeconds
+     * @param  int     $timespanInSeconds
      * @param  string  $fileFilter
-     * @param  false  $deleteEmptyFolders
-     * @param  array  $blackListRegEx
+     * @param  false   $deleteEmptyFolders
+     * @param  array   $blackListRegEx
      */
-    public function deleteFilesOlderThan(string $directory, int $timespanInSeconds = 0, string $fileFilter = '*',
-        bool $deleteEmptyFolders = false, array $blackListRegEx = []): void
-    {
+    public function deleteFilesOlderThan(string $directory, int $timespanInSeconds = 0, string $fileFilter = '*', bool $deleteEmptyFolders = false, array $blackListRegEx = []): void {
         if ($directory) {
             $now = time();
 
@@ -82,6 +81,7 @@ class FileService extends BaseService
      *
      * @param  string  $partOfPath
      * @param  string  $replacementString
+     *
      * @return string
      */
     public function getValidPath(string $partOfPath, string $replacementString = ''): string
@@ -89,20 +89,21 @@ class FileService extends BaseService
         $partOfPath = preg_replace("#[~\#%&*{}:<>?|\"']+#", $replacementString, $partOfPath);
         $partOfPath = preg_replace("#\\+#", '/', $partOfPath);
         $partOfPath = preg_replace("#/+#", '/', $partOfPath); // multiple = 1
+
         return $partOfPath;
     }
 
     /**
-     * @param  string  $sourcePath
-     * @param  callable  $callbackFile called like callbackFile($file, $sourcePathInfo) : void
-     * @param  int  $directoryDeep  -1: infinity, 0: root directory only, 1: 1 directory deeper but not 2 or more
-     * @param  array  $regexWhitelist
-     * @param  array  $regexBlacklist
-     * @param  string  $addDelimiters
+     * @param  string    $sourcePath
+     * @param  callable  $callbackFile   called like callbackFile(string $file, array $sourcePathInfo) : void
+     * @param  int       $directoryDeep  -1: infinity, 0: root directory only, 1: 1 directory deeper but not 2 or more
+     * @param  array     $regexWhitelist
+     * @param  array     $regexBlacklist
+     * @param  string    $addDelimiters
+     *
      * @return void
      */
-    public function runDirectoryFiles(string $sourcePath, callable $callbackFile, int $directoryDeep = -1,
-        array $regexWhitelist = [], array $regexBlacklist = [], string $addDelimiters = ''): void
+    public function runDirectoryFiles(string $sourcePath, callable $callbackFile, int $directoryDeep = -1, array $regexWhitelist = [], array $regexBlacklist = [], string $addDelimiters = ''): void
     {
         if ($sourcePath) {
 
@@ -156,7 +157,8 @@ class FileService extends BaseService
      *
      * @param  string  $source
      * @param  string  $subtractPart
-     * @param  bool  $cleanSlash
+     * @param  bool    $cleanSlash
+     *
      * @return string|null
      */
     public function subPath(string $source, string $subtractPart, bool $cleanSlash = false): ?string
@@ -180,6 +182,7 @@ class FileService extends BaseService
      * wrapper for mkdir(..., 0775, true)
      *
      * @param  string  $path
+     *
      * @return bool
      */
     public function createDir(string $path): bool
@@ -190,12 +193,14 @@ class FileService extends BaseService
     /**
      * @param  string  $source
      * @param  string  $destination
+     *
      * @return bool
      */
     public function copyPath(string $source, string $destination): bool
     {
         if (!file_exists($source)) {
             $this->error(sprintf("Source file does not exists: %s", $source));
+
             return false;
         }
 
@@ -206,6 +211,7 @@ class FileService extends BaseService
 
         if (!copy($source, $destination)) {
             $this->error(sprintf("Copy failed from %s to %s", $source, $destination));
+
             return false;
         }
 
@@ -214,6 +220,7 @@ class FileService extends BaseService
 
     /**
      * @param  string  $path
+     *
      * @return false|string
      */
     public function loadFile(string $path): false|string
@@ -232,6 +239,7 @@ class FileService extends BaseService
      * @param  string  $fullSourcePath
      * @param  string  $rootPath
      * @param  string  $includeSource
+     *
      * @return string|null
      */
     public function makeRelativePath(string $fullSourcePath, string $rootPath, string $includeSource = ''): ?string
@@ -241,7 +249,7 @@ class FileService extends BaseService
             $relativeIncludeSource = $this->subPath($includeSource, $rootPath, true);
             $relativeIncludeSourceDirs = explode('/', $relativeIncludeSource);
             foreach ($relativeIncludeSourceDirs as $dir) {
-                $relativeResult='../'.$relativeResult;
+                $relativeResult = '../'.$relativeResult;
             }
         }
 
