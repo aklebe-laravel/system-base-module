@@ -5,7 +5,6 @@ namespace Modules\SystemBase\database\seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
-use Modules\WebsiteBase\app\Models\Base\TraitAttributeAssignment;
 
 class BaseModelSeeder extends Seeder
 {
@@ -22,8 +21,8 @@ class BaseModelSeeder extends Seeder
     }
 
     /**
-     * @param  string  $modelClass
-     * @param  int  $count
+     * @param  string         $modelClass
+     * @param  int            $count
      * @param  callable|null  $data
      *
      * @return array list of ids created

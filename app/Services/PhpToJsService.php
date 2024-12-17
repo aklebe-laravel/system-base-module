@@ -22,7 +22,7 @@ class PhpToJsService extends BaseService
      */
     public function addData(string $key, mixed $data): void
     {
-        $this->data[$key] = $data;
+        data_set($this->data, $key, $data);
     }
 
     /**
