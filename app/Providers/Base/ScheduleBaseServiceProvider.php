@@ -28,9 +28,9 @@ class ScheduleBaseServiceProvider extends ServiceProvider
 
                 // If disabled, note it every 15 minutes to log ...
                 $schedule->call(function () {
-                    Log::warning("Scheduling disabled by config 'system_base.schedule.enabled'. Only disabled marked schedules should run. (Message every 15 minutes)",
+                    Log::warning("Scheduling disabled by config 'system_base.schedule.enabled'. Only disabled marked schedules should run. (Message every 2 hours)",
                         [get_class($this), __METHOD__]);
-                })->everyFifteenMinutes();
+                })->everyTwoHours();
 
                 // Start the overwritten method for disabled stuff ...
                 $this->bootDisabledSchedule($schedule);

@@ -211,7 +211,7 @@ class ModuleService extends AddonObjectService
             $result['snake_name'] = $this->getSnakeName($result['studly_name']);
             $moduleLongName = $result['snake_name']; // inclusive vendor if composer found
             $result['path'] = $item->getPath();
-            $result['priority'] = $item->getPriority();
+            $result['priority'] = (int)$item->getPriority(); // Module::priority is returning a string ...
 
             // read composer.json
             $composerPath = $result['path'].'/composer.json';
@@ -266,7 +266,7 @@ class ModuleService extends AddonObjectService
 
         // priority is not a property, so sort() is a callable
         $collection = $this->getItemsCollection()->sort(function (Module $a, Module $b) {
-            return $a->getPriority() - $b->getPriority();
+            return (int)$a->getPriority() - (int)$b->getPriority();
         });
 
         // enable is not a property, so where() is a callable

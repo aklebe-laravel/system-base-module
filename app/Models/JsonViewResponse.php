@@ -28,24 +28,25 @@ class JsonViewResponse
     ];
 
     /**
-     * @param $defaultMessage
+     * @param  string  $defaultMessage
      * @param $defaultStatus
      */
-    public function __construct($defaultMessage = '', $defaultStatus = null)
+    public function __construct(string $defaultMessage = '', $defaultStatus = null)
     {
         $this->setMessage($defaultMessage, $defaultStatus);
     }
 
     /**
-     * @param $status
+     * @param  int  $status
+     *
      * @return void
      */
-    public function setStatusSuccess($status = 200): void
+    public function setStatusSuccess(int $status = 200): void
     {
         $this->responseStatusCode = $status;
     }
 
-    public function setStatusError($status = 422): void
+    public function setStatusError(int $status = 422): void
     {
         $this->responseStatusCode = $status;
     }
