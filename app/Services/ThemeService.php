@@ -26,6 +26,7 @@ class ThemeService extends AddonObjectService
      * @param  string  $itemName
      * @param  bool    $status
      * @param  bool    $ignoreIfItemExists
+     *
      * @return bool
      */
     public function setStatus(string $itemName, bool $status, bool $ignoreIfItemExists = false): bool
@@ -37,6 +38,7 @@ class ThemeService extends AddonObjectService
      * @param  string  $path
      * @param  string  $itemName
      * @param  string  $generatorKey  config key for path definition (like 'config' or 'views')
+     *
      * @return string
      */
     public static function getPath(string $path = '', string $itemName = '', string $generatorKey = ''): string
@@ -58,6 +60,7 @@ class ThemeService extends AddonObjectService
 
     /**
      * @param  string  $themeName
+     *
      * @return string
      */
     public function getThemeParent(string $themeName = ''): string
@@ -84,10 +87,10 @@ class ThemeService extends AddonObjectService
      * @param  array   $regexWhitelist
      * @param  array   $regexBlacklist
      * @param  string  $addDelimiters
+     *
      * @return array
      */
-    public function getFilesFromTheme(string $path = '', string $themeName = '', int $directoryDeep = 0,
-        array $regexWhitelist = [], array $regexBlacklist = [], string $addDelimiters = ''): array
+    public function getFilesFromTheme(string $path = '', string $themeName = '', int $directoryDeep = 0, array $regexWhitelist = [], array $regexBlacklist = [], string $addDelimiters = ''): array
     {
         if (!$themeName) {
             $themeName = $this->getCurrentTheme();
@@ -111,10 +114,10 @@ class ThemeService extends AddonObjectService
      * @param  array   $regexWhitelist
      * @param  array   $regexBlacklist
      * @param  string  $addDelimiters
+     *
      * @return array
      */
-    public function getFilesInFolder(string $path, int $directoryDeep = 0, array $regexWhitelist = [],
-        array $regexBlacklist = [], string $addDelimiters = ''): array
+    public function getFilesInFolder(string $path, int $directoryDeep = 0, array $regexWhitelist = [], array $regexBlacklist = [], string $addDelimiters = ''): array
     {
         $files = [];
         if (is_dir($path)) {
@@ -133,9 +136,12 @@ class ThemeService extends AddonObjectService
             }, $directoryDeep, $regexWhitelist, $regexBlacklist, $addDelimiters);
 
             $files = app('system_base')->toHtmlSelectOptions($files, null, '[key]',
-                [NativeObjectBase::UNSELECT_RELATION_IDENT => __('No choice')], app('system_base')::SortModeAsc,);
+                app('system_base')->getHtmlSelectOptionNoValue('No choice', NativeObjectBase::UNSELECT_RELATION_IDENT),
+                app('system_base')::SortModeAsc
+            );
 
         }
+
         return $files;
     }
 
@@ -144,12 +150,14 @@ class ThemeService extends AddonObjectService
      *
      * @param  string  $itemIdentifier
      * @param  bool    $validate
+     *
      * @return array
      */
     public function getVendorInfo(string $itemIdentifier, bool $validate = false): array
     {
         $result = parent::getVendorInfo($itemIdentifier, $validate);
         $result['theme_snake_name_folder'] = str_replace('-', '_', data_get($result, 'theme_snake_name'));
+
         return $result;
     }
 
@@ -159,6 +167,7 @@ class ThemeService extends AddonObjectService
      * Otherwise, data will be calculated (to prepare/create/clone it)
      *
      * @param  string|Module  $item
+     *
      * @return array
      */
     public function getItemInfo(mixed $item): array
@@ -229,6 +238,7 @@ class ThemeService extends AddonObjectService
      * Get info of all found themes.
      *
      * @param  bool  $enabledOnly
+     *
      * @return Collection
      */
     public function getItemInfoList(bool $enabledOnly = true): Collection

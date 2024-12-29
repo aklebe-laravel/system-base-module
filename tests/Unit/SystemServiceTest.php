@@ -5,6 +5,7 @@ namespace Modules\SystemBase\tests\Unit;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Log;
 use Modules\SystemBase\app\Services\Base\AddonObjectService;
 use Modules\SystemBase\app\Services\ModuleService;
 use Modules\SystemBase\app\Services\ThemeService;
@@ -307,12 +308,12 @@ class SystemServiceTest extends TestCase
         /** @var ModuleService $moduleService */
         $moduleService = app(ModuleService::class);
         $moduleService->runOrderedEnabledModules(function (?Module $module) use (&$found) {
-            $class = 'Modules\\'.$module->getStudlyName().'\\Models\\User';
+            $class = 'Modules\\'.$module->getStudlyName().'\\app\\Models\\User';
             if (class_exists($class)) {
                 if ((new $class) instanceof User) {
-                    if ($module->getPriority() > $found['priority']) {
+                    if ((int)$module->getPriority() > $found['priority']) {
                         $found['class'] = $class;
-                        $found['priority'] = $module->getPriority();
+                        $found['priority'] = (int)$module->getPriority();
                     }
                 }
             }

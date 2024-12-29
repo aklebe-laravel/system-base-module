@@ -187,6 +187,18 @@ class BaseComponent extends Component
     }
 
     /**
+     * @param  iterable  $messages
+     *
+     * @return void
+     */
+    protected function addSuccessMessages(iterable $messages): void
+    {
+        foreach ($messages as $message) {
+            $this->addSuccessMessage($message);
+        }
+    }
+
+    /**
      * @param  string  $message
      *
      * @return void

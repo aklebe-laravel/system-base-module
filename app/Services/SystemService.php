@@ -26,6 +26,42 @@ class SystemService extends BaseService
     const int SortModeAsc = 0x0100;
     const int SortModeDesc = 0x0200;
 
+    const string EnvGroupTesting = 'testing';
+    const string EnvGroupDeveloper = 'developer';
+    const string EnvGroupImportant = 'important';
+    const string EnvGroupProduction = 'production';
+
+    /**
+     *
+     */
+    const array EnvGroups = [
+        // any kind of testing environments
+        self::EnvGroupTesting    => [
+            'testing',
+            'dusk',
+        ],
+        // unstable envs like local and dev
+        self::EnvGroupDeveloper  => [
+            'local',
+            'dev',
+        ],
+        // stable and safes (production like) environments, also staging envs
+        self::EnvGroupImportant  => [
+            'demo',
+            'int',
+            'staging',
+            'prod',
+            'production',
+            'demo',
+        ],
+        // only real production with public/unknown users, no staging, but demo
+        self::EnvGroupProduction => [
+            'prod',
+            'production',
+            'demo',
+        ],
+    ];
+
     /**
      *
      */
@@ -73,7 +109,7 @@ class SystemService extends BaseService
                 return array_map(function ($value) use ($maxDeep) {
                     return (is_array($value) || is_object($value)) ? $this->toArrayRaw($value,
                         $maxDeep - 1) : $value;
-                }, $data);
+                }, (array) $data);
             }
         }
 
@@ -253,6 +289,17 @@ class SystemService extends BaseService
         }
 
         return $options;
+    }
+
+    /**
+     * @param  string  $label
+     * @param  string  $key
+     *
+     * @return string[]
+     */
+    public function getHtmlSelectOptionNoValue(string $label, string $key = ''): array
+    {
+        return [$key => '['.__($label).']'];
     }
 
     /**
@@ -721,5 +768,85 @@ class SystemService extends BaseService
         }
 
         return round($bytes, 2).' '.$units[$i];
+    }
+
+    /**
+     * @param  string       $group
+     * @param  string|null  $env
+     *
+     * @return bool
+     */
+    public function isInEnvGroup(string $group, ?string $env = null): bool
+    {
+        if ($env === null) {
+            $env = config('app.env');
+        }
+
+        $group = data_get(self::EnvGroups, $group, []);
+
+        return (in_array($env, $group));
+    }
+
+    /**
+     * @param  string|null  $env
+     *
+     * @return bool
+     */
+    public function isEnvGroupImportant(?string $env = null): bool
+    {
+        return $this->isInEnvGroup(self::EnvGroupImportant, $env);
+    }
+
+    /**
+     * @param  string|null  $env
+     *
+     * @return bool
+     */
+    public function isEnvGroupProduction(?string $env = null): bool
+    {
+        return $this->isInEnvGroup(self::EnvGroupProduction, $env);
+    }
+
+    /**
+     * @param  string|null  $env
+     *
+     * @return bool
+     */
+    public function isEnvGroupDeveloper(?string $env = null): bool
+    {
+        return $this->isInEnvGroup(self::EnvGroupDeveloper, $env);
+    }
+
+    /**
+     * @param  string|null  $env
+     *
+     * @return bool
+     */
+    public function isEnvGroupTesting(?string $env = null): bool
+    {
+        return $this->isInEnvGroup(self::EnvGroupTesting, $env);
+    }
+
+    /**
+     * @param  array          $array
+     * @param  callable       $callbackScalar
+     * @param  string         $currentRoot
+     * @param  int            $currentDeep
+     * @param  callable|null  $callbackEveryNode
+     *
+     * @return void
+     */
+    public function runThroughArray(array $array, callable $callbackScalar, string $currentRoot = '', int $currentDeep = 0, ?callable $callbackEveryNode = null): void
+    {
+        foreach ($array as $key => $value) {
+            if (is_scalar($value)) {
+                $callbackScalar($key, $value, $currentRoot, $currentDeep + 1);
+            } else {
+                if ($callbackEveryNode !== null) {
+                    $callbackEveryNode($key, $value, $currentRoot, $currentDeep + 1);
+                }
+                $this->runThroughArray($value, $callbackScalar, ($currentRoot ? ($currentRoot.'.') : '').$key, $currentDeep + 1, $callbackEveryNode);
+            }
+        }
     }
 }

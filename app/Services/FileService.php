@@ -109,11 +109,10 @@ class FileService extends BaseService
 
             if (!is_dir($sourcePath)) {
                 $this->error("Missing directory: ".$sourcePath, [__METHOD__]);
+                return;
             }
 
             // glob ignores hidden ('.gitkeep') by default
-            //            $files = glob($sourcePath.DIRECTORY_SEPARATOR.'*');
-            //            foreach ($files as $file) {
             foreach (new DirectoryIterator($sourcePath) as $fileInfo) {
                 if ($fileInfo->isDot()) {
                     continue;
