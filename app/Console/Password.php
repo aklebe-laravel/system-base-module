@@ -4,7 +4,7 @@ namespace Modules\SystemBase\app\Console;
 
 use App\Models\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Hash;
+use Symfony\Component\Console\Command\Command as CommandResult;
 
 class Password extends Command
 {
@@ -28,7 +28,7 @@ class Password extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
         $password = $this->secret("Type the password you want to hash:");
 
@@ -37,18 +37,18 @@ class Password extends Command
                 $user->password = $password;
                 $user->update();
                 $this->output->writeln(sprintf("User password was updated by id: %s", $id));
-                return Command::SUCCESS;
+                return CommandResult::SUCCESS;
             }
             if ($user = app(User::class)->where('email', $id)->first()) {
                 $user->password = $password;
                 $user->update();
                 $this->output->writeln(sprintf("User password was updated by email: %s", $id));
-                return Command::SUCCESS;
+                return CommandResult::SUCCESS;
             }
         }
 
         $this->output->writeln('Generated password hash:');
         $this->output->writeln($password);
-        return Command::SUCCESS;
+        return CommandResult::SUCCESS;
     }
 }
