@@ -849,4 +849,23 @@ class SystemService extends BaseService
             }
         }
     }
+
+    /**
+     * @param  array|null  $a
+     *
+     * @return array
+     */
+    public function assignArrayKeysByValue(?array $a): array
+    {
+        $result = [];
+        if ($a === null) {
+            return $result;
+        }
+
+        foreach ($a as $value) {
+            $result[$value] = $value;
+        }
+
+        return $result;
+    }
 }

@@ -5,6 +5,7 @@ namespace Modules\SystemBase\app\Http\Livewire;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Modules\SystemBase\app\Events\Livewire\BaseComponentActionCalled;
 
 class BaseComponent extends Component
 {
@@ -74,7 +75,7 @@ class BaseComponent extends Component
      *
      * @return void
      */
-    public function hydrate()
+    public function hydrate(): void
     {
         $this->initHydrate();
     }
@@ -97,7 +98,7 @@ class BaseComponent extends Component
      *
      * @return void
      */
-    public function mount()
+    public function mount(): void
     {
         $this->initMount();
     }
@@ -109,6 +110,15 @@ class BaseComponent extends Component
      */
     protected function initBooted(): void
     {
+        $this->addMessageBoxButton('accept');
+        $this->addMessageBoxButton('cancel');
+        $this->addMessageBoxButton('claim');
+        $this->addMessageBoxButton('close');
+        $this->addMessageBoxButton('delete-item');
+        $this->addMessageBoxButton('launch');
+        $this->addMessageBoxButton('launch-item');
+        $this->addMessageBoxButton('save');
+        $this->addMessageBoxButton('simulate-item');
 
     }
 
@@ -119,26 +129,7 @@ class BaseComponent extends Component
      */
     public function booted(): void
     {
-        $this->initBeforeRender();
         $this->initBooted();
-    }
-
-    /**
-     * Add stuff like messagebox buttons here
-     *
-     * @return void
-     */
-    protected function initBeforeRender(): void
-    {
-        $this->addMessageBoxButton('accept');
-        $this->addMessageBoxButton('cancel');
-        $this->addMessageBoxButton('claim');
-        $this->addMessageBoxButton('close');
-        $this->addMessageBoxButton('delete-item');
-        $this->addMessageBoxButton('launch');
-        $this->addMessageBoxButton('launch-item');
-        $this->addMessageBoxButton('save');
-        $this->addMessageBoxButton('simulate-item');
     }
 
     /**
@@ -147,7 +138,7 @@ class BaseComponent extends Component
      *
      * @return void
      */
-    protected function addMessage(string $message, string $key = 'info'): void
+    public function addMessage(string $message, string $key = 'info'): void
     {
         $this->checkClearMessages();
         $this->baseMessages[$key][] = $message;
@@ -159,7 +150,7 @@ class BaseComponent extends Component
      *
      * @return void
      */
-    protected function addErrorMessage(string $message): void
+    public function addErrorMessage(string $message): void
     {
         $this->addMessage($message, 'error');
     }
@@ -169,7 +160,7 @@ class BaseComponent extends Component
      *
      * @return void
      */
-    protected function addErrorMessages(iterable $messages): void
+    public function addErrorMessages(iterable $messages): void
     {
         foreach ($messages as $message) {
             $this->addErrorMessage($message);
@@ -181,7 +172,7 @@ class BaseComponent extends Component
      *
      * @return void
      */
-    protected function addSuccessMessage(string $message): void
+    public function addSuccessMessage(string $message): void
     {
         $this->addMessage($message, 'success');
     }
@@ -191,7 +182,7 @@ class BaseComponent extends Component
      *
      * @return void
      */
-    protected function addSuccessMessages(iterable $messages): void
+    public function addSuccessMessages(iterable $messages): void
     {
         foreach ($messages as $message) {
             $this->addSuccessMessage($message);
@@ -203,7 +194,7 @@ class BaseComponent extends Component
      *
      * @return void
      */
-    protected function addInfoMessage(string $message): void
+    public function addInfoMessage(string $message): void
     {
         $this->addMessage($message, 'info');
     }
@@ -296,12 +287,25 @@ class BaseComponent extends Component
      *
      * @return void
      */
-    protected function addMessageBoxButton(string $name, string $module = 'system-base', ?string $viewPath = null): void
+    public function addMessageBoxButton(string $name, string $module = 'system-base', ?string $viewPath = null): void
     {
         app('php_to_js')->addData(
             'messageBoxes.'.$name,
             view($viewPath ?? $module.'::inc.message-box.buttons.'.$name)->render()
         );
     }
+
+    /**
+     * @param  mixed   $itemId  also array is allowed
+     * @param  string  $action
+     *
+     * @return void
+     */
+    #[On('module-action')]
+    public function moduleAction(string $action, mixed $itemId): void
+    {
+        BaseComponentActionCalled::dispatch($this, $action, $itemId);
+    }
+
 
 }
