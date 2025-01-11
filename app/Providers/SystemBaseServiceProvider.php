@@ -62,11 +62,15 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
         // user shorthand
         $this->app->bind('user', User::class);
 
+        $this->app->singleton(SystemService::class);
         $this->app->singleton('system_base', SystemService::class);
+        $this->app->singleton(ModuleService::class);
         $this->app->singleton('system_base_module', ModuleService::class);
+        $this->app->singleton(FileService::class);
         $this->app->singleton('system_base_file', FileService::class);
+        $this->app->singleton(PhpToJsService::class);
         $this->app->singleton('php_to_js', PhpToJsService::class);
-        $this->app->singleton(ModelService::class, ModelService::class);
+        $this->app->singleton(ModelService::class);
 
         $this->app->register(RouteServiceProvider::class);
         $this->app->register(LivewireComponentServiceProvider::class);
