@@ -71,6 +71,7 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
         $this->app->register(RouteServiceProvider::class);
         $this->app->register(LivewireComponentServiceProvider::class);
         $this->app->register(ScheduleServiceProvider::class);
+        $this->app->register(EventServiceProvider::class);
     }
 
 }
