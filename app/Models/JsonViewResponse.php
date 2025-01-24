@@ -29,7 +29,7 @@ class JsonViewResponse
 
     /**
      * @param  string  $defaultMessage
-     * @param $defaultStatus
+     * @param          $defaultStatus
      */
     public function __construct(string $defaultMessage = '', $defaultStatus = null)
     {
@@ -77,6 +77,7 @@ class JsonViewResponse
     /**
      * @param $msg
      * @param $newStatusCode
+     *
      * @return void
      */
     public function setMessage($msg, $newStatusCode = null): void
@@ -90,7 +91,7 @@ class JsonViewResponse
     /**
      * @return string
      */
-    public function getMessage() : string
+    public function getMessage(): string
     {
         return $this->responseData['message'];
     }
@@ -98,6 +99,7 @@ class JsonViewResponse
     /**
      * @param $msg
      * @param $newStatusCode
+     *
      * @return void
      */
     public function setErrorMessage($msg, $newStatusCode = null): void
@@ -108,6 +110,7 @@ class JsonViewResponse
 
     /**
      * @param  bool  $inclusiveMessage
+     *
      * @return array
      */
     public function getErrors(bool $inclusiveMessage = true): array
@@ -121,6 +124,7 @@ class JsonViewResponse
 
     /**
      * @param  string  $msg
+     *
      * @return void
      */
     public function addMessageToErrorList(string $msg): void
@@ -130,6 +134,7 @@ class JsonViewResponse
 
     /**
      * @param  iterable  $messages
+     *
      * @return void
      */
     public function addMessagesToErrorList(iterable $messages): void
@@ -140,28 +145,38 @@ class JsonViewResponse
     }
 
     /**
-     * @param $data
+     * If $data is a scalar, it's used as a key inside of data and value will be used.
+     * Otherwise, if $data is array or object, 'data' will set to it and $value will be ignored.
+     *
+     * @param  mixed       $data
+     * @param  mixed|null  $value
+     *
      * @return void
      */
-    public function setData($data): void
+    public function setData(mixed $data, mixed $value = null): void
     {
-        $this->responseData['data'] = $data;
+        if (is_scalar($data)) {
+            data_set($this->responseData['data'], $data, $value);
+        } else {
+            $this->responseData['data'] = $data;
+        }
     }
 
     /**
-     * @param $key
-     * @param $data
-     * @return void
+     * @param  string      $key
+     * @param  mixed|null  $default
+     *
+     * @return mixed
      */
-    public function setRootData($key, $data): void
+    public function getData(string $key, mixed $default = null): mixed
     {
-        $this->responseData[$key] = $data;
+        return data_get($this->responseData['data'], $key, $default);
     }
 
     /**
      * Copy all errors if any.
      *
-     * @param JsonViewResponse $newResponseObject
+     * @param  JsonViewResponse  $newResponseObject
      *
      * @return void
      */
@@ -180,7 +195,7 @@ class JsonViewResponse
     /**
      * @return bool
      */
-    public function hasErrors() : bool
+    public function hasErrors(): bool
     {
         return (($this->responseStatusCode >= 400) || ($this->responseData['errors']));
     }
