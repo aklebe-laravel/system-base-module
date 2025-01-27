@@ -73,6 +73,61 @@ class SystemService extends BaseService
     protected array $uniqueCounters = [];
 
     /**
+     *
+     */
+    const string selectValueAll = '_all_';
+
+    /**
+     *
+     */
+    const string selectValueNoChoice = '_no_choice_';
+
+    /**
+     *
+     */
+    const string selectValueNone = '_none_';
+
+    /**
+     * option key:label
+     * see __construct()
+     *
+     * @var array|array[]
+     */
+    public array $allSelectOptionsRaw = [
+        self::selectValueAll      => 'All',
+        self::selectValueNoChoice => 'No choice',
+        self::selectValueNone     => 'None',
+    ];
+
+    /**
+     * see __construct()
+     *
+     * @var array|array[]
+     */
+    public array $selectOptionsSimple = [];
+
+    /**
+     * see __construct()
+     *
+     * @var array|array[]
+     */
+    public array $selectOptionsCompact = [];
+
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        foreach ($this->allSelectOptionsRaw as $k => $v) {
+            $this->selectOptionsSimple[$k] = $this->toSelectOptionSimple($v, $k);
+            $this->selectOptionsCompact[$k] = $this->toSelectOptionCompact($v, $k);
+        }
+    }
+
+    /**
      * Try always to force an array result.
      *
      * @param  mixed  $nestedObject
@@ -297,9 +352,26 @@ class SystemService extends BaseService
      *
      * @return string[]
      */
-    public function getHtmlSelectOptionNoValue(string $label, string $key = ''): array
+    public function toSelectOptionSimple(string $label, string $key = ''): array
     {
         return [$key => '['.__($label).']'];
+    }
+
+    /**
+     * @param  string  $label
+     * @param  string  $key
+     * @param  array   $extraData
+     *
+     * @return array[]
+     */
+    public function toSelectOptionCompact(string $label, string $key = '', array $extraData = []): array
+    {
+        return [
+            $key => [
+                'label' => '['.__($label).']',
+                ... $extraData,
+            ],
+        ];
     }
 
     /**

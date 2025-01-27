@@ -1,6 +1,7 @@
 {
   ":count Rows Max": ":count Zeilen max",
   "Actions": "Aktionen",
+  "All": "Alle",
   "Created At": "Erstellt am",
   "Delete Item": "Eintrag löschen",
   "Deleted": "Entfernt",
@@ -11,6 +12,8 @@
   "More details ...": "Weitere Informationen ...",
   "Name": "Name",
   "New Entry": "Neuer Eintrag",
+  "No choice": "Keine Auswahl ...",
+  "None": "Keine",
   "Reset all Filters": "Alle Filter auf standard",
   "Updated At": "Aktualisiert am",
   "User": "Benutzer",

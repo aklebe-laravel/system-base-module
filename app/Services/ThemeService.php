@@ -136,7 +136,7 @@ class ThemeService extends AddonObjectService
             }, $directoryDeep, $regexWhitelist, $regexBlacklist, $addDelimiters);
 
             $files = app('system_base')->toHtmlSelectOptions($files, null, '[key]',
-                app('system_base')->getHtmlSelectOptionNoValue('No choice', NativeObjectBase::UNSELECT_RELATION_IDENT),
+                app('system_base')->selectOptionsSimple[app('system_base')::selectValueNoChoice],
                 app('system_base')::SortModeAsc
             );
 
