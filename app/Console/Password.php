@@ -14,7 +14,7 @@ class Password extends Command
      *
      * @var string
      */
-    protected $signature = 'password:generate {--user=:Optional user id or email to assign this password. Otherwise password will be printed.}';
+    protected $signature = 'password:generate {--user=:Optional user id or email to assign this password. Otherwise a new password will be printed.}';
 
     /**
      * The console command description.
