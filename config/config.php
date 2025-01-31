@@ -7,6 +7,7 @@ return [
         'enabled' => env('SCHEDULE_ENABLED', true),
     ],
     'cache'    => [
+        'enabled' => env('CACHE_ENABLED', true),
         'default_ttl'  => env('MODULE_SYSTEM_BASE_CACHE_DEFAULT_TTL', 1),
         'object'       => [
             'signature' => [

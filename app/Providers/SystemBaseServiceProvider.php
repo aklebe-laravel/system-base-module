@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Modules\SystemBase\app\Console\Password;
 use Modules\SystemBase\app\Providers\Base\ModuleBaseServiceProvider;
+use Modules\SystemBase\app\Services\CacheService;
 use Modules\SystemBase\app\Services\FileService;
 use Modules\SystemBase\app\Services\ModelService;
 use Modules\SystemBase\app\Services\ModuleService;
@@ -71,6 +72,8 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
         $this->app->singleton(PhpToJsService::class);
         $this->app->singleton('php_to_js', PhpToJsService::class);
         $this->app->singleton(ModelService::class);
+        //$this->app->singleton('cache', CacheService::class);//cache is reserved
+        $this->app->singleton(CacheService::class);
 
         $this->app->register(RouteServiceProvider::class);
         $this->app->register(LivewireComponentServiceProvider::class);

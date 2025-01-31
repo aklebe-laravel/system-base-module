@@ -568,11 +568,9 @@ class SystemService extends BaseService
      */
     public function findModuleClass(string $className, string $generatorKey = 'model', bool $returnInfoData = false, string $forceModule = ''): string|array
     {
-        $ttlDefault = config('system-base.cache.default_ttl', 1);
-        $ttl = config('system-base.cache.object.signature.ttl', $ttlDefault);
-
-        return Cache::remember("findModule_{$forceModule}_{$className}_{$generatorKey}_".($returnInfoData ? '1' : '0'),
-            $ttl, function () use ($className, $generatorKey, $returnInfoData, $forceModule) {
+        return app(CacheService::class)->rememberUseConfig("findModule_{$forceModule}_{$className}_{$generatorKey}_".($returnInfoData ? '1' : '0'),
+            'system-base.cache.object.signature.ttl',
+            function () use ($className, $generatorKey, $returnInfoData, $forceModule) {
 
                 /** @var ModuleService $moduleService */
                 $moduleService = app(ModuleService::class);
@@ -639,11 +637,7 @@ class SystemService extends BaseService
      */
     public function getModelTable(string $modelClass): string
     {
-        // find table name to avoid ambiguous columns
-        $ttlDefault = config('system-base.cache.default_ttl', 1);
-        $ttl = config('system-base.cache.db.signature.ttl', $ttlDefault);
-
-        return Cache::remember('table_name_of_model_'.$modelClass, $ttl, function () use ($modelClass) {
+        return app(CacheService::class)->rememberUseConfig('table_name_of_model_'.$modelClass, 'system-base.cache.db.signature.ttl', function () use ($modelClass) {
             return app($modelClass)->getTable();
         });
     }
@@ -691,10 +685,7 @@ class SystemService extends BaseService
      */
     public function getTranslations(array $langList = ['de']): array
     {
-        $ttlDefault = config('system-base.cache.default_ttl', 1);
-        $ttl = config('system-base.cache.translations.ttl', $ttlDefault);
-
-        return Cache::remember('system_base_translations_'.json_encode($langList), $ttl, function () use ($langList) {
+        return app(CacheService::class)->rememberUseConfig('system_base_translations_'.json_encode($langList), 'system-base.cache.translations.ttl', function () use ($langList) {
             $result = [];
             foreach ($langList as $lang) {
                 $result[$lang] = trans('*', [], $lang);
@@ -757,10 +748,7 @@ class SystemService extends BaseService
      */
     public function getDbColumns(string $tableName): array
     {
-        $ttlDefault = config('system-base.cache.default_ttl', 1);
-        $ttl = config('system-base.cache.db.signature.ttl', $ttlDefault);
-
-        return Cache::remember('db_columns_from_table_'.$tableName, $ttl, function () use ($tableName) {
+        return app(CacheService::class)->rememberUseConfig('db_columns_from_table_'.$tableName, 'system-base.cache.db.signature.ttl', function () use ($tableName) {
             return Schema::getColumnListing($tableName);
         });
     }
@@ -772,10 +760,7 @@ class SystemService extends BaseService
      */
     public function getUserClassName(): string
     {
-        $ttlDefault = config('system-base.cache.default_ttl', 1);
-        $ttl = config('system-base.cache.object.signature.ttl', $ttlDefault);
-
-        return Cache::remember('current_user_class_name', $ttl, function () {
+        return app(CacheService::class)->rememberUseConfig('current_user_class_name', 'system-base.cache.object.signature.ttl', function () {
             return app(User::class)::class;
         });
     }
