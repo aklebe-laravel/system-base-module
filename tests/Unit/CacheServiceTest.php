@@ -32,7 +32,7 @@ class CacheServiceTest extends TestCase
     public function testCommonCache_10_butDisabled()
     {
         // disable cache
-        config(['system-base.cache.enabled' => false]);
+        app(CacheService::class)->disable();
 
         $cacheCounter = 4;
         for ($i = 0; $i < 10; $i++) {

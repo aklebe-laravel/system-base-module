@@ -23,6 +23,28 @@ class CacheService extends BaseService
     const int ttlForever = -9999999;
 
     /**
+     * Disable cache for this instance
+     *
+     * @return void
+     */
+    public function disable(): void
+    {
+        // disable cache
+        config(['system-base.cache.enabled' => false]);
+    }
+
+    /**
+     * Enable cache for this instance
+     *
+     * @return void
+     */
+    public function enable(): void
+    {
+        // disable cache
+        config(['system-base.cache.enabled' => true]);
+    }
+
+    /**
      * @param  string   $key  cache  key
      * @param  int      $ttl  ttl in seconds
      * @param  Closure  $callback
