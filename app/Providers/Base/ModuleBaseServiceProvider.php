@@ -5,6 +5,7 @@ namespace Modules\SystemBase\app\Providers\Base;
 use Illuminate\Support\Facades\Log;
 use Modules\SystemBase\app\Services\ModuleService;
 use Nwidart\Modules\Module;
+use Throwable;
 
 class ModuleBaseServiceProvider extends BaseServiceProvider
 {
@@ -57,7 +58,7 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
      * Merge config per module or all in one ...
      *
      * @param  string  $key
-     * @param  bool  $perModule
+     * @param  bool    $perModule
      *
      * @return void
      */
@@ -73,8 +74,9 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
             // otherwise, config for modules all in one accessed by 'xxx.yyy'
             $this->mergeConfigFromRecursive(ModuleService::getPath($file, $this->moduleName, 'config'), $key);
 
-        } catch (\Exception) {
+        } catch (Throwable $ex) {
             // file not found, ignore it ...
+            Log::error($ex->getMessage());
         }
     }
 
@@ -97,7 +99,7 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
                         $this->mergeConfigFromRecursive($configFullPath, $moduleFoundKey);
                     }
                 }
-            } catch (\Exception $ex) {
+            } catch (Throwable $ex) {
                 Log::error($ex->getMessage(), [__METHOD__]);
             }
 
@@ -129,7 +131,7 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
             //
             $this->mergeCombinedConfigs();
 
-        } catch (\Exception) {
+        } catch (Throwable) {
         }
     }
 
