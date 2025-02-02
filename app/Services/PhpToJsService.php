@@ -3,6 +3,7 @@
 namespace Modules\SystemBase\app\Services;
 
 
+use Illuminate\Support\Arr;
 use Modules\SystemBase\app\Services\Base\BaseService;
 
 /**
@@ -22,7 +23,17 @@ class PhpToJsService extends BaseService
      */
     public function addData(string $key, mixed $data): void
     {
-        data_set($this->data, $key, $data);
+        Arr::set($this->data, $key, $data);
+    }
+
+    /**
+     * @param  string  $key
+     *
+     * @return bool
+     */
+    public function has(string $key): bool
+    {
+        return Arr::has($this->data, $key);
     }
 
     /**
@@ -31,7 +42,7 @@ class PhpToJsService extends BaseService
      */
     public function get(string $key): mixed
     {
-        return data_get($this->data, $key);
+        return Arr::get($this->data, $key);
     }
 
     /**

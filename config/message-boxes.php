@@ -12,8 +12,8 @@ return [
                 'content' => 'ask_delete_item',
                 // constant names from defaultActions[] or closure
                 'actions' => [
-                    'cancel',
-                    'delete-item',
+                    'system-base::cancel',
+                    'system-base::delete-item',
                 ],
             ],
         ],
@@ -24,8 +24,8 @@ return [
                 'content' => 'ask_delete_item',
                 // constant names from defaultActions[] or closure
                 'actions' => [
-                    'cancel',
-                    'delete-item',
+                    'system-base::cancel',
+                    'system-base::delete-item',
                 ],
             ],
         ],

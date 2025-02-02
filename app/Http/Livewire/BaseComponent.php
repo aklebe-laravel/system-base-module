@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Modules\SystemBase\app\Events\Livewire\BaseComponentActionCalled;
+use Modules\WebsiteBase\app\Services\WebsiteService;
 
 class BaseComponent extends Component
 {
@@ -110,16 +111,7 @@ class BaseComponent extends Component
      */
     protected function initBooted(): void
     {
-        $this->addMessageBoxButton('accept');
-        $this->addMessageBoxButton('cancel');
-        $this->addMessageBoxButton('claim');
-        $this->addMessageBoxButton('close');
-        $this->addMessageBoxButton('delete-item');
-        $this->addMessageBoxButton('launch');
-        $this->addMessageBoxButton('launch-item');
-        $this->addMessageBoxButton('save');
-        $this->addMessageBoxButton('simulate-item');
-
+        app(WebsiteService::class)->provideMessageBoxButtons(category: 'default');
     }
 
     /**
@@ -278,21 +270,6 @@ class BaseComponent extends Component
         $paramsStr = implode(",", $params);
 
         return $methodName.'('.$paramsStr.');';
-    }
-
-    /**
-     * @param  string       $name
-     * @param  string       $module
-     * @param  string|null  $viewPath
-     *
-     * @return void
-     */
-    public function addMessageBoxButton(string $name, string $module = 'system-base', ?string $viewPath = null): void
-    {
-        app('php_to_js')->addData(
-            'messageBoxes.'.$name,
-            view($viewPath ?? $module.'::inc.message-box.buttons.'.$name)->render()
-        );
     }
 
     /**

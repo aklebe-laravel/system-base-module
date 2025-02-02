@@ -25,5 +25,8 @@ return [
         'translations' => [
             'ttl' => env('MODULE_SYSTEM_BASE_CACHE_TRANSLATIONS_TTL', 1),
         ],
+        'frontend' => [
+            'ttl' => env('MODULE_SYSTEM_BASE_CACHE_FRONTEND_TTL', 1),
+        ],
     ],
 ];
