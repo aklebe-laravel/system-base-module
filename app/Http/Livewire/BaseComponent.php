@@ -7,6 +7,7 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 use Modules\SystemBase\app\Events\Livewire\BaseComponentActionCalled;
 use Modules\WebsiteBase\app\Services\WebsiteService;
+use Throwable;
 
 class BaseComponent extends Component
 {
@@ -112,6 +113,18 @@ class BaseComponent extends Component
     protected function initBooted(): void
     {
         app(WebsiteService::class)->provideMessageBoxButtons(category: 'default');
+
+        // if messages exists oin session, then 1) assign this messages and 2) delete this session
+        try {
+            if ($sessionMessages = session()->get('messages')) {
+                // assign
+                $this->baseMessages = $sessionMessages;
+                // delete
+                session()->forget('messages');
+            }
+        } catch (Throwable $exception) {
+            Log::error($exception->getMessage(), [__METHOD__]);
+        }
     }
 
     /**
@@ -125,70 +138,82 @@ class BaseComponent extends Component
     }
 
     /**
+     * Set a message. Use $tempSession for redirects to different livewires.
+     *
      * @param  string  $message
      * @param  string  $key
+     * @param  bool    $tempSession  if true set message to session
      *
      * @return void
      */
-    public function addMessage(string $message, string $key = 'info'): void
+    public function addMessage(string $message, string $key = 'info', bool $tempSession = false): void
     {
         $this->checkClearMessages();
         $this->baseMessages[$key][] = $message;
         $this->timeLastMessage = time();
-    }
 
-    /**
-     * @param  string  $message
-     *
-     * @return void
-     */
-    public function addErrorMessage(string $message): void
-    {
-        $this->addMessage($message, 'error');
-    }
-
-    /**
-     * @param  iterable  $messages
-     *
-     * @return void
-     */
-    public function addErrorMessages(iterable $messages): void
-    {
-        foreach ($messages as $message) {
-            $this->addErrorMessage($message);
+        if ($tempSession) {
+            session()->put('messages', $this->baseMessages);
         }
     }
 
     /**
      * @param  string  $message
+     * @param  bool    $tempSession
      *
      * @return void
      */
-    public function addSuccessMessage(string $message): void
+    public function addErrorMessage(string $message, bool $tempSession = false): void
     {
-        $this->addMessage($message, 'success');
+        $this->addMessage($message, 'error', $tempSession);
     }
 
     /**
      * @param  iterable  $messages
+     * @param  bool      $tempSession
      *
      * @return void
      */
-    public function addSuccessMessages(iterable $messages): void
+    public function addErrorMessages(iterable $messages, bool $tempSession = false): void
     {
         foreach ($messages as $message) {
-            $this->addSuccessMessage($message);
+            $this->addErrorMessage($message, $tempSession);
         }
     }
 
     /**
      * @param  string  $message
+     * @param  bool    $tempSession
      *
      * @return void
      */
-    public function addInfoMessage(string $message): void
+    public function addSuccessMessage(string $message, bool $tempSession = false): void
     {
-        $this->addMessage($message, 'info');
+        $this->addMessage($message, 'success', $tempSession);
+    }
+
+    /**
+     * @param  iterable  $messages
+     * @param  bool      $tempSession
+     *
+     * @return void
+     */
+    public function addSuccessMessages(iterable $messages, bool $tempSession = false): void
+    {
+        foreach ($messages as $message) {
+            $this->addSuccessMessage($message, $tempSession);
+        }
+    }
+
+    /**
+     * @param  string  $message
+     * @param  bool    $tempSession
+     *
+     * @return void
+     */
+    public function addInfoMessage(string $message, bool $tempSession = false): void
+    {
+        $this->addMessage($message, 'info', $tempSession);
     }
 
     /**
