@@ -308,6 +308,4 @@ class BaseComponent extends Component
     {
         BaseComponentActionCalled::dispatch($this, $action, $itemId);
     }
-
-
 }
