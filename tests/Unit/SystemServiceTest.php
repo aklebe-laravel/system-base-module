@@ -5,7 +5,6 @@ namespace Modules\SystemBase\tests\Unit;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\Log;
 use Modules\SystemBase\app\Services\Base\AddonObjectService;
 use Modules\SystemBase\app\Services\ModuleService;
 use Modules\SystemBase\app\Services\ThemeService;
@@ -16,6 +15,7 @@ class SystemServiceTest extends TestCase
 {
     /**
      * Testing: toArray()
+     *
      * @return void
      */
     public function testToArray()
@@ -42,6 +42,7 @@ class SystemServiceTest extends TestCase
 
     /**
      * Testing: toArrayRaw()
+     *
      * @return void
      */
     public function testToArrayRaw()
@@ -71,6 +72,7 @@ class SystemServiceTest extends TestCase
 
     /**
      * Testing: arrayCompareIsEqual()
+     *
      * @return void
      */
     public function testArrayCompareIsEqual()
@@ -93,7 +95,8 @@ class SystemServiceTest extends TestCase
     }
 
     /**
-     * Testing: arrayMergeRecursiveDistinct() and arrayCompareIsEqual())
+     * Testing: arrayMergeRecursiveDistinct() and arrayCompareIsEqual()
+     *
      * @return void
      */
     public function testArrayMergeRecursiveDistinctDefault()
@@ -113,7 +116,7 @@ class SystemServiceTest extends TestCase
                     'b' => [
                         'b1' => 'b1 Value',
                         'b2' => 'b2 Value',
-                    ]
+                    ],
                 ],
                 'b'      => [
                     'b' => [
@@ -143,15 +146,18 @@ class SystemServiceTest extends TestCase
             ],
         ];
 
-        foreach ($testObjects as $testObject) {
+        foreach ($testObjects as &$testObject) {
             $result = app('system_base')->arrayMergeRecursiveDistinct($testObject['a'], $testObject['b']);
-            $this->assertTrue(app('system_base')->arrayCompareIsEqual($result, $testObject['result']),
-                "Unexpected result.");
+            $this->assertTrue(app('system_base')->arrayCompareIsEqual($result, $testObject['result']), "Unexpected result.");
         }
+
+        // test source was not changed
+        $this->assertTrue(data_get($testObjects, '1.a.b.b1') === 'b1 Value', "Unexpected result.");
     }
 
     /**
-     * Testing: arrayMergeRecursiveDistinct() and arrayCompareIsEqual())
+     * Testing: arrayMergeRecursiveDistinct() and arrayCompareIsEqual()
+     *
      * @return void
      */
     public function testArrayMergeRecursiveDistinctForceOverride()
@@ -187,6 +193,7 @@ class SystemServiceTest extends TestCase
 
     /**
      * Testing: arrayRootCopyWhitelistedNoArrays()
+     *
      * @return void
      */
     public function testArrayRootCopyWhitelistedNoArrays()
@@ -195,51 +202,36 @@ class SystemServiceTest extends TestCase
         $a = [
             'disabled'        => true,
             'meaning_of_life' => 42,
-            'test'            => 9
+            'test'            => 9,
         ];
         $b = [
             'disabled'        => false,
             'meaning_of_life' => 42,
-            'test'            => 9
+            'test'            => 9,
         ];
         $x = [
             'disabled'        => 'useless',
             'meaning_of_life' => 'useless',
-            'test'            => 'useless'
+            'test'            => 'useless',
         ];
         $this->assertFalse(app('system_base')->arrayRootCopyWhitelistedNoArrays($a, $b, $x)['disabled']);
 
         // disabled not present
-        $a = [
-            'disabled'        => true,
-            'meaning_of_life' => 42,
-            'test'            => 9
-        ];
         $b = [
             'meaning_of_life' => 42,
-            'test'            => 9
-        ];
-        $x = [
-            'disabled'        => 'useless',
-            'meaning_of_life' => 'useless',
-            'test'            => 'useless'
+            'test'            => 9,
         ];
         $this->assertTrue(app('system_base')->arrayRootCopyWhitelistedNoArrays($a, $b, $x)['disabled']);
 
         // disabled present, but do not copy disabled
-        $a = [
-            'disabled'        => true,
-            'meaning_of_life' => 42,
-            'test'            => 9
-        ];
         $b = [
             'disabled'        => false,
             'meaning_of_life' => 42,
-            'test'            => 9
+            'test'            => 9,
         ];
         $x = [
             'meaning_of_life' => 'useless',
-            'test'            => 'useless'
+            'test'            => 'useless',
         ];
         $this->assertTrue(app('system_base')->arrayRootCopyWhitelistedNoArrays($a, $b, $x)['disabled']);
 
@@ -247,6 +239,7 @@ class SystemServiceTest extends TestCase
 
     /**
      * Testing: switchEnvDebug()
+     *
      * @return void
      */
     public function testSwitchEnvDebug()
@@ -311,12 +304,13 @@ class SystemServiceTest extends TestCase
             $class = 'Modules\\'.$module->getStudlyName().'\\app\\Models\\User';
             if (class_exists($class)) {
                 if ((new $class) instanceof User) {
-                    if ((int)$module->getPriority() > $found['priority']) {
+                    if ((int) $module->getPriority() > $found['priority']) {
                         $found['class'] = $class;
-                        $found['priority'] = (int)$module->getPriority();
+                        $found['priority'] = (int) $module->getPriority();
                     }
                 }
             }
+
             return true;
         });
 

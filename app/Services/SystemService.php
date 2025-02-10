@@ -184,7 +184,7 @@ class SystemService extends BaseService
      *
      * @return array
      */
-    public static function arrayMergeRecursiveDistinct(array &$destination, array &$source, bool $forceOverride = false, bool $ignoreNull = true, array $butForceOverrideKeys = []): array
+    public static function arrayMergeRecursiveDistinct(array $destination, array $source, bool $forceOverride = false, bool $ignoreNull = true, array $butForceOverrideKeys = []): array
     {
         foreach ($source as $key => &$value) {
             if (is_array($value) && isset($destination[$key]) && is_array($destination[$key])) {
@@ -258,7 +258,7 @@ class SystemService extends BaseService
      *
      * @return array
      */
-    public function arrayRootCopyWhitelistedNoArrays(array &$arrayDest, array $arraySrc, array $whitelistArray): array
+    public function arrayRootCopyWhitelistedNoArrays(array $arrayDest, array $arraySrc, array $whitelistArray): array
     {
         foreach ($whitelistArray as $key => $valueTemp) {
             if (isset($arraySrc[$key])) {
