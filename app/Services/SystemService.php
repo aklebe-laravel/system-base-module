@@ -895,7 +895,7 @@ class SystemService extends BaseService
     public function runThroughArray(array $array, callable $callbackScalar, string $currentRoot = '', int $currentDeep = 0, ?callable $callbackEveryNode = null): void
     {
         foreach ($array as $key => $value) {
-            if (is_scalar($value)) {
+            if (($value === null) || is_scalar($value)) {
                 $callbackScalar($key, $value, $currentRoot, $currentDeep + 1);
             } else {
                 if ($callbackEveryNode !== null) {

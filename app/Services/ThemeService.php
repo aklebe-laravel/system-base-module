@@ -99,13 +99,10 @@ class ThemeService extends AddonObjectService
         $result = [];
 
         if ($parentTheme = $this->getThemeParent($themeName)) {
-            $result = $this->getFilesFromTheme($path, $parentTheme, $directoryDeep, $regexWhitelist, $regexBlacklist,
-                $addDelimiters);
+            $result = $this->getFilesFromTheme($path, $parentTheme, $directoryDeep, $regexWhitelist, $regexBlacklist, $addDelimiters);
         }
 
-        return array_merge($result,
-            $this->getFilesInFolder($this->getPath($path, $themeName), $directoryDeep, $regexWhitelist, $regexBlacklist,
-                $addDelimiters));
+        return array_merge($result, $this->getFilesInFolder($this->getPath($path, $themeName), $directoryDeep, $regexWhitelist, $regexBlacklist, $addDelimiters));
     }
 
     /**
@@ -134,11 +131,6 @@ class ThemeService extends AddonObjectService
                 $files[$viewName] = $viewName;
 
             }, $directoryDeep, $regexWhitelist, $regexBlacklist, $addDelimiters);
-
-            $files = app('system_base')->toHtmlSelectOptions($files, null, '[key]',
-                app('system_base')->selectOptionsSimple[app('system_base')::selectValueNoChoice],
-                app('system_base')::SortModeAsc
-            );
 
         }
 
