@@ -526,7 +526,8 @@ class SystemService extends BaseService
      */
     public function logExecutionTime(string $name): void
     {
-        $this->debug('Script "'.$name.'" execution time: '.number_format($this->getExecutionTime(), 2, '.', '').' sec');
+        $t = Carbon::createFromTimestamp(LARAVEL_START);
+        $this->debug('Script "'.$name.'" execution time: '.$t->longAbsoluteDiffForHumans());
     }
 
     /**
