@@ -112,9 +112,10 @@ class BaseComponent extends Component
      */
     protected function initBooted(): void
     {
+        // message box buttons
         app(WebsiteService::class)->provideMessageBoxButtons(category: 'default');
 
-        // if messages exists oin session, then 1) assign this messages and 2) delete this session
+        // if messages exists in session, then 1) assign this messages and 2) delete this session
         try {
             if ($sessionMessages = session()->get('messages')) {
                 // assign
