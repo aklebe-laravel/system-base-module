@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\SystemBase\app\Forms\Base;
+namespace Modules\SystemBase\app\Http\Livewire\Form\Base;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 

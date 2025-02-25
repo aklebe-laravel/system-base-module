@@ -18,7 +18,8 @@ class PhpToJsService extends BaseService
      * Add data for frontend javascript.
      *
      * @param  string  $key
-     * @param  mixed  $data
+     * @param  mixed   $data
+     *
      * @return void
      */
     public function addData(string $key, mixed $data): void
@@ -37,11 +38,16 @@ class PhpToJsService extends BaseService
     }
 
     /**
-     * @param  string  $key
+     * @param  string|null  $key
+     *
      * @return array|mixed
      */
-    public function get(string $key): mixed
+    public function get(?string $key = null): mixed
     {
+        if ($key === null) {
+            return $this->data;
+        }
+
         return Arr::get($this->data, $key);
     }
 
