@@ -276,7 +276,7 @@ class SystemService extends BaseService
 
     /**
      * @param  iterable|null  $list
-     * @param  mixed|null     $valueProperty  special meaning '[key]'
+     * @param  mixed|null     $valueProperty  special meaning '[key]', can bee a Closure or array
      * @param  string|null    $keyProperty    special meaning '[key]'
      * @param  array          $first
      * @param  int            $sortMode
@@ -296,8 +296,10 @@ class SystemService extends BaseService
                     $key = ($keyProperty === null) ? $k : data_get($v, $keyProperty);
                 }
 
-                // Mehrere Values?
-                if (is_array($valueProperty)) {
+                // Closure?
+                if ($this->isCallableClosure($valueProperty)) {
+                    $value = $valueProperty($v);
+                } elseif (is_array($valueProperty)) {// Multiple values as array?
                     $value = '';
                     foreach ($valueProperty as $vp) {
                         if ($value) {
