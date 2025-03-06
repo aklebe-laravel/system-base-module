@@ -96,4 +96,15 @@ class CacheService extends BaseService
 
         return $this->remember($key, $ttl, $callback);
     }
+
+    /**
+     * @param  string   $key  cache key
+     * @param  Closure  $callback
+     *
+     * @return mixed
+     */
+    public function rememberFrontend(string $key, Closure $callback): mixed
+    {
+        return $this->rememberUseConfig($key, 'system-base.cache.frontend.ttl', $callback);
+    }
 }
