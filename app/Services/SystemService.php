@@ -184,11 +184,11 @@ class SystemService extends BaseService
      *
      * @return array
      */
-    public static function arrayMergeRecursiveDistinct(array $destination, array $source, bool $forceOverride = false, bool $ignoreNull = true, array $butForceOverrideKeys = []): array
+    public function arrayMergeRecursiveDistinct(array $destination, array $source, bool $forceOverride = false, bool $ignoreNull = true, array $butForceOverrideKeys = []): array
     {
         foreach ($source as $key => &$value) {
             if (is_array($value) && isset($destination[$key]) && is_array($destination[$key])) {
-                $destination[$key] = self::arrayMergeRecursiveDistinct($destination[$key], $value, $forceOverride);
+                $destination[$key] = $this->arrayMergeRecursiveDistinct($destination[$key], $value, $forceOverride);
             } else {
                 if ($forceOverride || (!$ignoreNull) || ($value !== null) || in_array($key, $butForceOverrideKeys)) {
                     $destination[$key] = $value;
