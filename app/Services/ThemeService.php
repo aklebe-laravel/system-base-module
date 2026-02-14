@@ -4,6 +4,7 @@ namespace Modules\SystemBase\app\Services;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Str;
 use Modules\SystemBase\app\Services\Base\AddonObjectService;
 use Nwidart\Modules\Module;
@@ -55,6 +56,21 @@ class ThemeService extends AddonObjectService
         }
 
         return $result;
+    }
+
+    /**
+     * @param  string  $path
+     * @param  string  $itemName
+     *
+     * @return string
+     */
+    public static function getAssetUrl(string $path = '', string $itemName = ''): string
+    {
+        if (!$itemName) {
+            $itemName = self::getCurrentTheme();
+        }
+
+        return Vite::asset("Themes/$itemName/$path");
     }
 
     /**
