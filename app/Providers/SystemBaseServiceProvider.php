@@ -11,6 +11,7 @@ use Modules\SystemBase\app\Services\CacheService;
 use Modules\SystemBase\app\Services\FileService;
 use Modules\SystemBase\app\Services\ModelService;
 use Modules\SystemBase\app\Services\ModuleService;
+use Modules\SystemBase\app\Services\PathService;
 use Modules\SystemBase\app\Services\PhpToJsService;
 use Modules\SystemBase\app\Services\SystemService;
 use Shipu\Themevel\Middleware\WebMiddleware;
@@ -69,6 +70,8 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
         $this->app->singleton('system_base_module', ModuleService::class);
         $this->app->singleton(FileService::class);
         $this->app->singleton('system_base_file', FileService::class);
+        $this->app->singleton(PathService::class);
+        $this->app->singleton('system_base_path', PathService::class);
         $this->app->singleton(PhpToJsService::class);
         $this->app->singleton('php_to_js', PhpToJsService::class);
         $this->app->singleton(ModelService::class);

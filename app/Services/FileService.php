@@ -35,7 +35,8 @@ class FileService extends BaseService
      * @param  false   $deleteEmptyFolders
      * @param  array   $blackListRegEx
      */
-    public function deleteFilesOlderThan(string $directory, int $timespanInSeconds = 0, string $fileFilter = '*', bool $deleteEmptyFolders = false, array $blackListRegEx = []): void {
+    public function deleteFilesOlderThan(string $directory, int $timespanInSeconds = 0, string $fileFilter = '*', bool $deleteEmptyFolders = false, array $blackListRegEx = []): void
+    {
         if ($directory) {
             $now = time();
 
@@ -109,6 +110,7 @@ class FileService extends BaseService
 
             if (!is_dir($sourcePath)) {
                 $this->error("Missing directory: ".$sourcePath, [__METHOD__]);
+
                 return;
             }
 
@@ -141,9 +143,12 @@ class FileService extends BaseService
 
                 } elseif (is_dir($file)) {
                     if (($directoryDeep > 0) || ($directoryDeep === -1)) {
-                        $this->runDirectoryFiles($file, $callbackFile,
-                            ($directoryDeep === -1) ? $directoryDeep : $directoryDeep--, $regexWhitelist,
-                            $regexBlacklist, $addDelimiters);
+                        $this->runDirectoryFiles($file,
+                            $callbackFile,
+                            ($directoryDeep === -1) ? $directoryDeep : $directoryDeep--,
+                            $regexWhitelist,
+                            $regexBlacklist,
+                            $addDelimiters);
                     }
                 }
             }

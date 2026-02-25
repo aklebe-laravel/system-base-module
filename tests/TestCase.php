@@ -16,6 +16,10 @@ abstract class TestCase extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        # Turn on error reporting
+        //error_reporting(E_ALL);
+
         try {
             DB::beginTransaction();
         } catch (\Throwable $e) {
