@@ -1,0 +1,86 @@
+<?php
+
+namespace Modules\SystemBase\app\Providers;
+
+use App\Models\User;
+use Illuminate\Support\Str;
+use Modules\SystemBase\app\Console\MigrateLegacyTagsCommand;
+use Modules\SystemBase\app\Console\Password;
+use Modules\SystemBase\app\Providers\Base\ModuleBaseServiceProvider;
+use Modules\SystemBase\app\Services\CacheService;
+use Modules\SystemBase\app\Services\FileService;
+use Modules\SystemBase\app\Services\ModelService;
+use Modules\SystemBase\app\Services\ModuleService;
+use Modules\SystemBase\app\Services\PathService;
+use Modules\SystemBase\app\Services\PhpToJsService;
+use Modules\SystemBase\app\Services\SystemService;
+
+class SystemBaseServiceProvider extends ModuleBaseServiceProvider
+{
+    /**
+     * @var string $moduleName
+     */
+    protected string $moduleName = 'SystemBase';
+
+    /**
+     * @var string $moduleNameLower
+     */
+    protected string $moduleNameLower = 'system-base';
+
+    /**
+     * Registers the console commands and provides broadcast channel names for javascript.
+     *
+     * @return void
+     */
+    public function boot(): void
+    {
+        parent::boot();
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                Password::class,
+                MigrateLegacyTagsCommand::class,
+            ]);
+        }
+
+        // @todo: find accurate place
+        $channelPrefix = Str::studly(config('broadcasting.channel_prefix', ''));
+        $channelName = $channelPrefix.'deployments_default-console';
+
+        app('php_to_js')->addData('broadcast_channel_prefix', $channelPrefix);
+        app('php_to_js')->addData('default_console_channel', $channelName);
+    }
+
+    /**
+     * Registers the services as singletons (with short aliases like 'system_base') and the sub providers.
+     *
+     * @return void
+     */
+    public function register(): void
+    {
+        parent::register();
+
+        // user shorthand
+        $this->app->bind('user', User::class);
+
+        $this->app->singleton(SystemService::class);
+        $this->app->singleton('system_base', SystemService::class);
+        $this->app->singleton(ModuleService::class);
+        $this->app->singleton('system_base_module', ModuleService::class);
+        $this->app->singleton(FileService::class);
+        $this->app->singleton('system_base_file', FileService::class);
+        $this->app->singleton(PathService::class);
+        $this->app->singleton('system_base_path', PathService::class);
+        $this->app->singleton(PhpToJsService::class);
+        $this->app->singleton('php_to_js', PhpToJsService::class);
+        $this->app->singleton(ModelService::class);
+        // no alias for CacheService: 'cache' is reserved by Laravel
+        $this->app->singleton(CacheService::class);
+
+        $this->app->register(RouteServiceProvider::class);
+        $this->app->register(LivewireComponentServiceProvider::class);
+        $this->app->register(ScheduleServiceProvider::class);
+        $this->app->register(EventServiceProvider::class);
+    }
+
+}

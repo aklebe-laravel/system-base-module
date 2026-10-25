@@ -1,0 +1,70 @@
+<?php
+
+namespace Modules\SystemBase\app\Services;
+
+use Illuminate\Support\Arr;
+use Modules\SystemBase\app\Services\Base\BaseService;
+
+/**
+ * Collects data from PHP which is handed over to the frontend javascript (as JSON).
+ * As singleton: app('php_to_js')->...
+ */
+class PhpToJsService extends BaseService
+{
+    /**
+     * @var array
+     */
+    protected array $data = [];
+
+    /**
+     * Add data for frontend javascript. $key is a dot path.
+     *
+     * @param  string  $key
+     * @param  mixed   $data
+     *
+     * @return void
+     */
+    public function addData(string $key, mixed $data): void
+    {
+        Arr::set($this->data, $key, $data);
+    }
+
+    /**
+     * True if the dot path exists.
+     *
+     * @param  string  $key
+     *
+     * @return bool
+     */
+    public function has(string $key): bool
+    {
+        return Arr::has($this->data, $key);
+    }
+
+    /**
+     * Value of a dot path, or all data if $key is null.
+     *
+     * @param  string|null  $key
+     *
+     * @return array|mixed
+     */
+    public function get(?string $key = null): mixed
+    {
+        if ($key === null) {
+            return $this->data;
+        }
+
+        return Arr::get($this->data, $key);
+    }
+
+    /**
+     * All data as JSON (false on encoding errors).
+     *
+     * @return false|string
+     */
+    public function toJson(): false|string
+    {
+        return json_encode($this->data);
+    }
+
+}
