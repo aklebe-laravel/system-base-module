@@ -447,7 +447,7 @@ class GitService extends BaseService
     }
 
     /**
-     * First branch matching $constraint as regular expression (a leading 'dev-' is removed).
+     * First branch matching $constraint as regular expression for the whole name (a leading 'dev-' is removed).
      * Entries like "HEAD -> origin/master" are skipped.
      *
      * @param  array   $branchList
@@ -468,7 +468,8 @@ class GitService extends BaseService
             if (str_contains($branch, '->')) {
                 continue;
             }
-            if (preg_match('#'.$constraint.'#', $branch)) {
+            // the whole name: "feature-x" must not match "old-feature-x"
+            if (preg_match('#^'.$constraint.'$#', $branch)) {
                 return $branch;
             }
         }
