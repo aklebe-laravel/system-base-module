@@ -324,6 +324,22 @@ class GitService extends BaseService
     }
 
     /**
+     * True if a branch is checked out, false for a tag or commit ("detached HEAD").
+     *
+     * @return bool
+     */
+    public function isOnBranch(): bool
+    {
+        try {
+            $this->gitRepository->execute('symbolic-ref', '-q', 'HEAD');
+
+            return true;
+        } catch (GitException) {
+            return false;
+        }
+    }
+
+    /**
      * True if the working tree has uncommitted changes.
      *
      * @return bool
@@ -509,6 +525,7 @@ class GitService extends BaseService
      */
     public function getCommitId(): string
     {
-        return $this->gitRepository->getLastCommitId()->toString();
+        return $this->gitRepository->getLastCommitId()
+            ->toString();
     }
 }
