@@ -1,6 +1,6 @@
-## SystemBase Module
+# SystemBase Module
 
-A **required** module for [Mercy Scaffold Application](https://github.com/aklebe-laravel/mercy-scaffold).
+A **core** module of the [Mercy Scaffold](https://github.com/aklebe-laravel/mercy-scaffold).
 
 This module provides the most basic operations for modules and themes: service helpers, base classes for
 service providers and Livewire components, config merging, caching, parsing and tags.

@@ -1,7 +1,7 @@
 {
   "name": "aklebe-laravel/system-base-module",
   "type": "laravel-module",
-  "description": "",
+  "description": "Core module of the Mercy Scaffold: base service providers and Livewire components, config merging, caching and helpers.",
   "authors": [
     {
       "name": "Andreas Klebe",
