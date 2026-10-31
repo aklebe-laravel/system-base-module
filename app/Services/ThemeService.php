@@ -6,6 +6,7 @@ use AlizHarb\Themer\Facades\Theme;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Modules\SystemBase\app\Services\Base\AddonObjectService;
 
 /**
@@ -80,7 +81,18 @@ class ThemeService extends AddonObjectService
      */
     public static function getCurrentTheme(): string
     {
-        return Theme::getActiveTheme()->slug;
+        $theme = Theme::getActiveTheme();
+        if ($theme === null) {
+            // a clear message instead of "Attempt to read property 'slug' on null" (e.g. THEME_NAME of an empty config)
+            $path = (string) config('themer.themes_path');
+            $available = array_map(fn(string $file) => basename(dirname($file)), glob($path.'/*/theme.json') ?: []);
+            throw new RuntimeException(sprintf("Theme '%s' (env THEME_NAME, project config kernel.theme) not found in %s. Available: %s.",
+                (string) config('themer.active'),
+                $path,
+                $available ? implode(', ', $available) : 'none'));
+        }
+
+        return $theme->slug;
     }
 
     /**
