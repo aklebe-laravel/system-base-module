@@ -3,6 +3,7 @@
 namespace Modules\SystemBase\app\Providers;
 
 use App\Models\User as AppUser;
+use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Config;
@@ -17,6 +18,7 @@ use Modules\SystemBase\app\Services\ModuleService;
 use Modules\SystemBase\app\Services\PathService;
 use Modules\SystemBase\app\Services\PhpToJsService;
 use Modules\SystemBase\app\Services\SystemService;
+use ReflectionFunction;
 
 class SystemBaseServiceProvider extends ModuleBaseServiceProvider
 {
@@ -98,7 +100,7 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
      */
     protected function syncUserModel(): void
     {
-        $userClass = get_class($this->app->make(AppUser::class));
+        $userClass = $this->getBoundUserClass();
 
         // local eloquent model of the users provider (used by the LDAP provider, see Acl)
         Config::set('auth.providers.users.database.model', $userClass);
@@ -112,5 +114,28 @@ class SystemBaseServiceProvider extends ModuleBaseServiceProvider
 
         // polymorphic relations store 'users' instead of the class name
         Relation::morphMap(['users' => $userClass]);
+    }
+
+    /**
+     * Class name bound to App\Models\User, without creating an instance: a user model may need
+     * services (cache, database) that are not available everywhere, like in the build (package:discover).
+     *
+     * bind(AppUser::class, 'Some\\Class') keeps the class name inside the binding closure
+     * (Container::getClosure()), so it is read from there. A binding with an own closure
+     * can not be read without calling it, then AppUser::class is used.
+     *
+     * @return string
+     */
+    protected function getBoundUserClass(): string
+    {
+        $binding = $this->app->getBindings()[AppUser::class]['concrete'] ?? null;
+        if ($binding instanceof Closure) {
+            $concrete = (new ReflectionFunction($binding))->getStaticVariables()['concrete'] ?? null;
+            if (is_string($concrete) && is_a($concrete, AppUser::class, true)) {
+                return $concrete;
+            }
+        }
+
+        return AppUser::class;
     }
 }
