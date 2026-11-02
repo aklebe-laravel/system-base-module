@@ -187,6 +187,14 @@ class ModuleBaseServiceProvider extends BaseServiceProvider
             $this->loadTranslationsFrom($langPath, $this->moduleNameLower);
             $this->loadJsonTranslationsFrom($langPath);
         }
+
+        // Laravel loads the translations of a locale once per process. If something translated before this module
+        // was booted (e.g. __() in the boot of a module with a lower priority), the paths added here would be
+        // ignored: the JSON translations of this module were missing (frontend translations, message boxes).
+        // Forgetting what is loaded makes the next translation read all registered paths again.
+        if ($this->app->resolved('translator')) {
+            $this->app['translator']->setLoaded([]);
+        }
     }
 
     /**
