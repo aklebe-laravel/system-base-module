@@ -2,10 +2,15 @@
 
 namespace Modules\SystemBase\app\Http\Livewire;
 
+use Livewire\Attributes\Reactive;
+
 /**
  * Pagination component (view 'components.pagination').
  * Set $maxPages, $currentPage and optionally $pageLink or $pageLinkWire,
  * the navigation values are calculated before rendering.
+ *
+ * $maxPages, $currentPage and $itemsPerPage are reactive: a parent component (like a data table)
+ * passes new values on every render, otherwise the pagination would keep the values of the first render.
  */
 class Pagination extends BaseComponent
 {
@@ -35,6 +40,7 @@ class Pagination extends BaseComponent
      *
      * @var int
      */
+    #[Reactive]
     public int $itemsPerPage = 15;
 
     /**
@@ -42,6 +48,7 @@ class Pagination extends BaseComponent
      *
      * @var int
      */
+    #[Reactive]
     public int $maxPages = 1;
 
     /**
@@ -49,6 +56,7 @@ class Pagination extends BaseComponent
      *
      * @var int
      */
+    #[Reactive]
     public int $currentPage = 1;
 
     /**
@@ -108,34 +116,17 @@ class Pagination extends BaseComponent
      */
     protected function calcNavigationParameters(): void
     {
-        if ($this->currentPage > $this->maxPages) {
-            $this->currentPage = $this->maxPages;
-        }
+        // reactive properties must not be changed here, so work with local values
+        $maxPages = max(1, $this->maxPages);
+        $current = min(max(1, $this->currentPage), $maxPages);
+        $loopMax = max(1, min($this->loopMax, $maxPages));
 
-        if ($this->loopMax > $this->maxPages) {
-            $this->loopMax = $this->maxPages;
-        }
-        $this->loopEnd = $this->loopMax;
-        if ($this->maxPages > $this->loopMax) {
-            $endIndex = $this->currentPage + intdiv($this->loopMax, 2);
-            if ($endIndex > $this->loopEnd) {
-                $this->loopEnd = $endIndex;
-                if ($endIndex > $this->maxPages) {
-                    $this->loopEnd = $this->maxPages;
-                }
-                $this->loopStart = ($this->loopEnd - $this->loopMax) + 1;
-            }
-        }
+        // shown buttons centered around the current page, shifted at the start and the end
+        $this->loopStart = max(1, min($current - intdiv($loopMax, 2), $maxPages - $loopMax + 1));
+        $this->loopEnd = $this->loopStart + $loopMax - 1;
 
-        $this->prevPage = $this->currentPage - 1;
-        if ($this->prevPage < 1) {
-            $this->prevPage = 1;
-        }
-        $this->nextPage = $this->currentPage + 1;
-        if ($this->nextPage > $this->loopEnd) {
-            $this->nextPage = $this->loopEnd;
-        }
-
+        $this->prevPage = max(1, $current - 1);
+        $this->nextPage = min($maxPages, $current + 1);
     }
 
     /**
