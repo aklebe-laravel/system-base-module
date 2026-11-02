@@ -71,4 +71,21 @@ class EncodingTest extends TestCase
         // option is passed to nested arrays
         $this->assertSame(['x' => ["a\n b"]], Encoding::prepareForHtmlTagAttribute(['x' => ["a\n b"]], false));
     }
+
+    public function test_toISO8859_and_toLatin1_are_aliases_of_toWin1252(): void
+    {
+        $this->assertSame(Encoding::toWin1252('Grüße €'), Encoding::toISO8859('Grüße €'));
+        $this->assertSame(Encoding::toWin1252('Grüße €'), Encoding::toLatin1('Grüße €'));
+    }
+
+    public function test_utf8_decode_options(): void
+    {
+        $this->assertSame("Gr\xFC\xDFe \x80", Encoding::utf8_decode('Grüße €', Encoding::WITHOUT_ICONV));
+        $this->assertSame('?', Encoding::utf8_decode('😀', Encoding::WITHOUT_ICONV));
+
+        if (function_exists('iconv')) {
+            $this->assertSame("Gr\xFC\xDFe \x80", Encoding::utf8_decode('Grüße €', Encoding::ICONV_TRANSLIT));
+            $this->assertSame('ab', Encoding::utf8_decode('a😀b', Encoding::ICONV_IGNORE));
+        }
+    }
 }

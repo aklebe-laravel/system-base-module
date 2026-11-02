@@ -6,6 +6,7 @@ namespace Modules\SystemBase\tests\Unit\Isolated;
 use Illuminate\Database\ConnectionResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\MySqlConnection;
 use Modules\SystemBase\app\Services\ModelService;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -103,6 +104,39 @@ class ModelServiceTest extends IsolatedTestCase
         $service->PrepareBuilderSinceUpdated($updated, '2026-04-01 00:00:00');
         $this->assertSame(['select * from `items` where `updated_at` >= ?', ['2026-04-01 00:00:00']], $this->sqlOf($updated));
     }
+
+    public function test_resolveDotsForWhere_column(): void
+    {
+        $builder = ModelServiceTestItem::query()
+            ->where('active', 1);
+        (new ModelService())->resolveDotsForWhere($builder, 'name', 'x%', 'like');
+
+        $this->assertSame(['select * from `items` where `active` = ? or `name` like ?', [1, 'x%']], $this->sqlOf($builder));
+    }
+
+    public function test_resolveDotsForWhere_relation_column(): void
+    {
+        $builder = ModelServiceTestItem::query()
+            ->where('active', 1);
+        (new ModelService())->resolveDotsForWhere($builder, 'owner.name', 'andi');
+
+        $this->assertSame([
+            'select * from `items` where `active` = ? or exists (select * from `owners` where `items`.`owner_id` = `owners`.`id` and `name` = ?)',
+            [1, 'andi'],
+        ], $this->sqlOf($builder));
+    }
+
+    public function test_resolveDotsForWhere_ignores_unsupported_paths(): void
+    {
+        $service = new ModelService();
+
+        foreach (['pivot.name', 'owner.pivot.name', 'a.b.c', 'a.b.c.d'] as $path) {
+            $builder = ModelServiceTestItem::query();
+            $service->resolveDotsForWhere($builder, $path, 'x');
+            $this->assertSame(['select * from `items`', []], $this->sqlOf($builder), $path);
+        }
+    }
+
 }
 
 /**
@@ -111,4 +145,17 @@ class ModelServiceTest extends IsolatedTestCase
 class ModelServiceTestItem extends Model
 {
     protected $table = 'items';
+
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(ModelServiceTestOwner::class, 'owner_id');
+    }
+}
+
+/**
+ * Related model for ModelServiceTest.
+ */
+class ModelServiceTestOwner extends Model
+{
+    protected $table = 'owners';
 }

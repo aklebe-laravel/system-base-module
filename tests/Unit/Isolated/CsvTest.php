@@ -135,4 +135,74 @@ class CsvTest extends IsolatedTestCase
         $this->assertSame([1 => ['id' => '2', 'type' => 'b']], $csv->rows);
         $this->assertSame('2', $csv->getLastRow()['id']);
     }
+
+    public function test_createRow_has_all_header_columns(): void
+    {
+        $csv = new Csv();
+        $csv->header = ['id', 'name'];
+
+        $this->assertSame(['id' => '', 'name' => ''], $csv->createRow());
+    }
+
+    public function test_encodeRow_converts_to_utf8_in_place(): void
+    {
+        $csv = new Csv();
+        $row = ['name' => "M\xFCller", 'price' => "10 \x80", 'ok' => 'Grüße'];
+
+        $csv->encodeRow($row);
+
+        $this->assertSame(['name' => 'Müller', 'price' => '10 €', 'ok' => 'Grüße'], $row);
+
+        $empty = null;
+        $csv->encodeRow($empty);
+        $this->assertNull($empty);
+    }
+
+    public function test_loadHeader_and_loadNextRow_by_handle(): void
+    {
+        $dir = $this->makeTempDir();
+        $file = $this->makeFile($dir.'/h.csv', "id;name\n1;a;ignored\n");
+        $csv = new Csv();
+        $handle = fopen($file, 'r');
+
+        try {
+            $this->assertSame(['id', 'name'], $csv->loadHeader($handle));
+            $this->assertSame(['id' => '1', 'name' => 'a'], $csv->loadNextRow($handle));
+            $this->assertSame([], $csv->loadNextRow($handle), 'End of file.');
+        } finally {
+            fclose($handle);
+        }
+    }
+
+    public function test_loadNextRow_without_header_logs_an_error(): void
+    {
+        $file = $this->makeFile($this->makeTempDir().'/n.csv', "1;a\n");
+        $csv = new Csv();
+        $handle = fopen($file, 'r');
+
+        try {
+            $this->assertNull($csv->loadNextRow($handle));
+        } finally {
+            fclose($handle);
+        }
+
+        $this->assertSame(['No header'], $this->getLoggedMessages('error'));
+    }
+
+    public function test_addRowToFile_writes_utf8(): void
+    {
+        $file = $this->makeTempDir().'/w.csv';
+        $csv = new Csv();
+        $row = ['a' => "\xE4", 'b' => 'x;y'];
+        $handle = fopen($file, 'w');
+
+        try {
+            $csv->addRowToFile($handle, $row);
+        } finally {
+            fclose($handle);
+        }
+
+        $this->assertSame("ä;\"x;y\"\n", file_get_contents($file));
+        $this->assertSame('ä', $row['a'], 'The row is converted in place.');
+    }
 }

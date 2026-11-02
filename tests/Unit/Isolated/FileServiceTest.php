@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace Modules\SystemBase\tests\Unit\Isolated;
 
+use Illuminate\Filesystem\Filesystem;
 use Modules\SystemBase\app\Services\FileService;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -166,5 +167,18 @@ class FileServiceTest extends IsolatedTestCase
 
         $this->assertTrue($this->files->createDir($root.'/a/b'));
         $this->assertTrue($this->files->createDir($root.'/a/b'));
+    }
+
+    public function test_cleanDir_keeps_the_directory(): void
+    {
+        $this->container->instance('files', new Filesystem());
+        $root = $this->makeTempDir();
+        $this->makeFile($root.'/a.txt', 'a');
+        $this->makeFile($root.'/sub/b.txt', 'b');
+
+        $this->assertTrue($this->files->cleanDir($root));
+
+        $this->assertDirectoryExists($root);
+        $this->assertSame([], array_values(array_diff(scandir($root), ['.', '..'])));
     }
 }

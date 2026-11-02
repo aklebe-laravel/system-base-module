@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Modules\SystemBase\app\Services;
 
 use Closure;
+use Illuminate\Cache\TaggableStore;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
 use Modules\SystemBase\app\Services\Base\BaseService;
@@ -59,8 +60,8 @@ class CacheService extends BaseService
     /**
      * Returns the cached value or calls $callback and caches its result.
      *
-     * @param  string   $key  cache key
-     * @param  int      $ttl  ttl in seconds, <= 0: no caching, self::ttlForever: forever
+     * @param  string   $key   cache key
+     * @param  int      $ttl   ttl in seconds, <= 0: no caching, self::ttlForever: forever
      * @param  Closure  $callback
      * @param  array    $tags  only for stores supporting tags
      *
@@ -76,7 +77,8 @@ class CacheService extends BaseService
             return $callback();
         }
 
-        return $this->getStore($tags)->remember($key, $ttl, $callback);
+        return $this->getStore($tags)
+            ->remember($key, $ttl, $callback);
     }
 
     /**
@@ -94,7 +96,8 @@ class CacheService extends BaseService
             return $callback();
         }
 
-        return $this->getStore($tags)->rememberForever($key, $callback);
+        return $this->getStore($tags)
+            ->rememberForever($key, $callback);
     }
 
     /**
@@ -140,22 +143,37 @@ class CacheService extends BaseService
      */
     public function rememberFrontendUserBased(string $key, Closure $callback): mixed
     {
-        $userKey = app('website_base_settings')?->currentUser()?->getKey() ?? 0;
+        $userKey = app('website_base_settings')
+                       ?->currentUser()
+                       ?->getKey() ?? 0;
         $key .= '-'.$userKey;
 
         return $this->rememberUseConfig($key, 'system-base.cache.user_based_frontend.ttl', $callback);
     }
 
     /**
-     * Removes a key from the default store (without tags).
+     * Removes a key from the cache.
+     *
+     * Values cached with tags (remember(..., $tags)) are stored under a tag-namespaced key on stores
+     * supporting tags (like redis), so they have to be forgotten with the same tags. The untagged key is
+     * removed too, so callers not knowing how the value was cached still get it cleared.
      *
      * @param  string  $key
+     * @param  array   $tags  the tags used by remember()
      *
-     * @return bool
+     * @return bool true if at least one entry was removed
      */
-    public function forget(string $key): bool
+    public function forget(string $key, array $tags = []): bool
     {
-        return Cache::forget($key);
+        $result = Cache::forget($key);
+
+        if ($tags && Cache::getStore() instanceof TaggableStore) {
+            $result = Cache::tags($tags)
+                          ->forget($key)
+                      || $result;
+        }
+
+        return $result;
     }
 
     /**

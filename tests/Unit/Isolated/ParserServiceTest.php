@@ -38,7 +38,9 @@ class ParserServiceTest extends IsolatedTestCase
 
     public function test_plain_text_is_unchanged(): void
     {
-        $this->assertSame('no placeholders ${ENV} {{x}}', $this->makeParser()->parse('no placeholders ${ENV} {{x}}'));
+        $this->assertSame('no placeholders ${ENV} {{x}}',
+            $this->makeParser()
+                ->parse('no placeholders ${ENV} {{x}}'));
     }
 
     public function test_placeholder_with_attributes(): void
@@ -52,18 +54,23 @@ class ParserServiceTest extends IsolatedTestCase
 
     public function test_nested_placeholders_are_resolved_innermost_first(): void
     {
-        $this->assertSame('A+B', $this->makeParser()->parse("\${{join a='\${{upper v=\"a\"}}' b=\"\${{upper v='b'}}\"}}"));
+        $this->assertSame('A+B',
+            $this->makeParser()
+                ->parse("\${{join a='\${{upper v=\"a\"}}' b=\"\${{upper v='b'}}\"}}"));
     }
 
     public function test_escaped_quotes_in_values(): void
     {
-        $this->assertSame("IT'S", $this->makeParser()->parse("\${{upper v='it\\'s'}}"));
+        $this->assertSame("IT'S",
+            $this->makeParser()
+                ->parse("\${{upper v='it\\'s'}}"));
     }
 
     public function test_unknown_placeholder_throws_by_default(): void
     {
         $this->expectException(Exception::class);
-        $this->makeParser()->parse('${{unknown}}');
+        $this->makeParser()
+            ->parse('${{unknown}}');
     }
 
     public function test_unknown_placeholder_inline_error_or_unchanged(): void
@@ -109,11 +116,12 @@ class ParserServiceTest extends IsolatedTestCase
 
     public function test_parseArray_keeps_keys_and_sets_parent_index(): void
     {
-        $result = $this->makeParser()->parseArray([
-            'a' => "\${{upper v='x'}}",
-            'b' => 5,
-            'c' => ['d' => '${{parent}}'],
-        ]);
+        $result = $this->makeParser()
+            ->parseArray([
+                'a' => "\${{upper v='x'}}",
+                'b' => 5,
+                'c' => ['d' => '${{parent}}'],
+            ]);
 
         $this->assertSame(['a' => 'X', 'b' => 5, 'c' => ['d' => '2']], $result);
     }
@@ -124,5 +132,16 @@ class ParserServiceTest extends IsolatedTestCase
         $parser->addAllPlaceholderParameters(['sep' => '-']);
 
         $this->assertSame('x-y', $parser->parse("\${{join a='x' b='y'}}"));
+    }
+
+    public function test_getParserPlaceholderErrorCode(): void
+    {
+        $parser = new ParserService();
+
+        $parser->useInlineErrors = true;
+        $this->assertSame('((PARSER_ERR:01))', $parser->getParserPlaceholderErrorCode('01'));
+
+        $parser->useInlineErrors = false;
+        $this->assertSame('', $parser->getParserPlaceholderErrorCode('01'));
     }
 }

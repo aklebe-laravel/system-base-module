@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace Modules\SystemBase\tests\Unit\Isolated;
 
+use Illuminate\Support\Carbon;
 use Modules\SystemBase\app\Services\SystemService;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -71,10 +72,8 @@ class SystemServiceTest extends IsolatedTestCase
         $destination = ['a' => ['a1' => 1, 'a2' => 2], 'b' => 'keep'];
         $source = ['a' => ['a1' => 10, 'a3' => 3], 'b' => null, 'c' => 'new'];
 
-        $this->assertSame(
-            ['a' => ['a1' => 10, 'a2' => 2, 'a3' => 3], 'b' => 'keep', 'c' => 'new'],
-            $this->service->arrayMergeRecursiveDistinct($destination, $source)
-        );
+        $this->assertSame(['a' => ['a1' => 10, 'a2' => 2, 'a3' => 3], 'b' => 'keep', 'c' => 'new'],
+            $this->service->arrayMergeRecursiveDistinct($destination, $source));
     }
 
     public function test_arrayMergeRecursiveDistinct_force_override_also_writes_null(): void
@@ -236,7 +235,9 @@ class SystemServiceTest extends IsolatedTestCase
         $this->service->runThroughArray(['a' => 1, 'b' => ['c' => 2, 'd' => ['e' => null]]],
             function ($key, $value, $root, $deep) use (&$scalars) {
                 $scalars[] = [$root, $key, $value, $deep];
-            }, '', 0,
+            },
+            '',
+            0,
             function ($key, $value, $root, $deep) use (&$nodes) {
                 $nodes[] = [$root, $key, $deep];
             });
@@ -336,5 +337,113 @@ class SystemServiceTest extends IsolatedTestCase
 
         $this->assertGreaterThanOrEqual(2.0, $this->service->getExecutionTime($start));
         $this->assertGreaterThanOrEqual(0.0, $this->service->getExecutionTime());
+    }
+
+    public function test_arrayCompareIsBInA_checks_that_a_is_contained_in_b(): void
+    {
+        $a = ['x' => 1, 'nested' => ['k' => 'v']];
+        $b = ['x' => 1, 'nested' => ['k' => 'v'], 'more' => true];
+        $this->assertTrue($this->service->arrayCompareIsBInA($a, $b));
+        $this->assertFalse($this->service->arrayCompareIsBInA($b, $a), 'B has more keys than A.');
+
+        $strict = ['x' => '1'];
+        $this->assertFalse($this->service->arrayCompareIsBInA($strict, $b), 'Values are compared strictly.');
+
+        $nullValue = ['missing' => null];
+        $this->assertFalse($this->service->arrayCompareIsBInA($nullValue, $b), 'A missing key is not equal to null.');
+
+        $dotKey = ['a.b' => 1];
+        $nested = ['a' => ['b' => 1]];
+        $this->assertFalse($this->service->arrayCompareIsBInA($dotKey, $nested), 'Dots in keys are no paths.');
+
+        $nestedDiff = ['nested' => ['k' => 'other']];
+        $this->assertFalse($this->service->arrayCompareIsBInA($nestedDiff, $b));
+
+        $nestedNoArray = ['x' => ['k' => 1]];
+        $this->assertFalse($this->service->arrayCompareIsBInA($nestedNoArray, $b));
+
+        $empty = [];
+        $this->assertTrue($this->service->arrayCompareIsBInA($empty, $b));
+    }
+
+    public function test_toSelectOptionSimple_and_toSelectOptionCompact(): void
+    {
+        $this->assertSame(['' => '[Please select]'], $this->service->toSelectOptionSimple('Please select'));
+        $this->assertSame(['_none_' => '[None]'], $this->service->toSelectOptionSimple('None', '_none_'));
+        $this->assertSame(['_all_' => ['label' => '[All]', 'disabled' => true]],
+            $this->service->toSelectOptionCompact('All', '_all_', ['disabled' => true]));
+        $this->assertSame(['_x_' => ['label' => 'overwritten']],
+            $this->service->toSelectOptionCompact('X', '_x_', ['label' => 'overwritten']),
+            'Extra data wins over the label.');
+    }
+
+    public function test_switchEnvDebug(): void
+    {
+        $this->service->switchEnvDebug(true);
+        $this->assertTrue(config('app.debug'));
+
+        $this->service->switchEnvDebug(false);
+        $this->assertFalse(config('app.debug'));
+    }
+
+    public static function priceProvider(): array
+    {
+        return [
+            'price'             => [12.5, 'EUR', '', '12.50 EUR'],
+            'string price'      => ['1234.567', 'EUR', '', '1,234.57 EUR'],
+            'no currency'       => [3, null, '', '3.00 '],
+            'free offer'        => [0, 'EUR', 'offer', 'payment_method_offer'],
+            'free exchange'     => ['0', 'EUR', 'exchange_of_goods', 'payment_method_exchange_of_goods'],
+            'free other method' => [null, 'EUR', 'paypal', 'give away'],
+            'free no method'    => [0, 'EUR', null, 'give away'],
+        ];
+    }
+
+    #[DataProvider('priceProvider')]
+    public function test_getPriceFormatted(mixed $price, ?string $currency, ?string $paymentMethodCode, string $expected): void
+    {
+        $this->assertSame($expected, $this->service->getPriceFormatted($price, $currency, $paymentMethodCode));
+    }
+
+    /**
+     * Runs $callback with the given Carbon locale. The locale is global (static), a booted app
+     * of a previous test in the same run may have set another one (like 'de').
+     */
+    protected function withCarbonLocale(string $locale, callable $callback): void
+    {
+        $previous = Carbon::getLocale();
+        Carbon::setLocale($locale);
+
+        try {
+            $callback();
+        } finally {
+            Carbon::setLocale($previous);
+        }
+    }
+
+    public function test_formatDate_and_formatTime(): void
+    {
+        $this->withCarbonLocale('en', function () {
+            $this->assertSame('Monday, 19.10.2026', $this->service->formatDate('2026-10-19 13:45:00'));
+            $this->assertSame('13:45h ', $this->service->formatTime('2026-10-19 13:45:00'));
+        });
+
+        $this->withCarbonLocale('de', function () {
+            $this->assertSame('Montag, 19.10.2026', $this->service->formatDate('2026-10-19 13:45:00'));
+        });
+    }
+
+    public function test_formatTimeDiff(): void
+    {
+        Carbon::setTestNow('2026-10-19 13:45:00');
+
+        try {
+            $this->withCarbonLocale('en', function () {
+                $this->assertSame('3h', $this->service->formatTimeDiff('2026-10-19 10:45:00'));
+                $this->assertSame('2d', $this->service->formatTimeDiff('2026-10-21 13:45:00'));
+            });
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 }
